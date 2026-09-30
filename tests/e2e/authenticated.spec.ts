@@ -24,10 +24,8 @@ test.describe("authenticated backoffice", () => {
     await page.getByLabel("Contraseña").fill(password!);
     await page.getByRole("button", { name: "Iniciar sesión" }).click();
     await expect(page).toHaveURL(/\/admin$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Resumen operacional.");
-    await page.getByRole("link", { name: "Proyectos" }).click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Fuente de trabajo.");
-    const firstProject = page.locator(".data-row-link").first();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Project Control Center");
+    const firstProject = page.locator(".control-table__row a").first();
     if (await firstProject.count()) {
       await firstProject.click();
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
