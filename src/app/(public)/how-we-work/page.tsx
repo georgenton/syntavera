@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CapabilityCard } from "@/components/site/capability-card";
 import { CtaBand } from "@/components/site/cta-band";
-import { ProcessList } from "@/components/site/process-list";
+import { ProcessStepper } from "@/components/site/process-stepper";
 import { PageIntro } from "@/components/ui/page-intro";
 import { SectionHeader } from "@/components/ui/section-header";
 import { websiteContent } from "@/content/site";
@@ -17,7 +17,7 @@ export default function HowWeWorkPage() {
     <>
       <PageIntro eyebrow="Cómo trabajamos" title="Empezamos por el problema y construimos evidencia antes de escalar." lede="Seis decisiones. Cada una produce algo revisable y un punto donde detenerse, corregir o continuar." />
       <section className="section">
-        <div className="sv-container"><ProcessList /></div>
+        <div className="sv-container"><ProcessStepper showDetail /></div>
       </section>
       <section className="section section--sunken" id="capabilities">
         <span id="capacidades" aria-hidden="true" />

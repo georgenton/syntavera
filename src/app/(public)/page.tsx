@@ -1,8 +1,9 @@
 import { ArchitectureDiagram } from "@/components/site/architecture-diagram";
+import { BrandPattern } from "@/components/site/brand-pattern";
 import { CapabilityCard } from "@/components/site/capability-card";
 import { CtaBand } from "@/components/site/cta-band";
 import { LabCard } from "@/components/site/lab-card";
-import { ProcessList } from "@/components/site/process-list";
+import { ProcessStepper } from "@/components/site/process-stepper";
 import { ButtonLink } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
 import { publishableHomeLabs, websiteContent } from "@/content/site";
@@ -11,7 +12,7 @@ export default function HomePage() {
   return (
     <>
       <section className="hero sv-grid-bg">
-        <div className="hero__pattern" aria-hidden="true" />
+        <BrandPattern className="hero__pattern" variant="mesh" seed={5} width={1400} height={640} mask="fade-left" opacity={0.12} />
         <div className="sv-container hero__inner">
           <p className="sv-eyebrow">{websiteContent.hero.eyebrow}</p>
           <h1>{websiteContent.hero.title}</h1>
@@ -59,7 +60,7 @@ export default function HomePage() {
       <section className="section section--sunken">
         <div className="sv-container">
           <SectionHeader index="04" eyebrow="Cómo trabajamos" title="Una secuencia de decisiones, no paquetes." lede="Cada etapa produce algo revisable y un punto de decisión explícito antes de invertir más." />
-          <div style={{ marginTop: "var(--space-11)" }}><ProcessList /></div>
+          <div style={{ marginTop: "var(--space-11)" }}><ProcessStepper /></div>
         </div>
       </section>
 

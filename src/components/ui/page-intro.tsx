@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BrandPattern } from "@/components/site/brand-pattern";
 
 export function PageIntro({
   eyebrow,
@@ -15,7 +16,7 @@ export function PageIntro({
 }) {
   return (
     <section className={`page-intro sv-grid-bg${dark ? " page-intro--dark sv-dark sv-grid-bg--dark" : ""}`}>
-      <div className="page-intro__signal" aria-hidden="true" />
+      <BrandPattern variant="field" onDark={dark} seed={14} width={1400} height={420} mask="fade-left" opacity={dark ? 0.26 : 0.12} />
       <div className="sv-container page-intro__inner">
         <p className="sv-eyebrow">{eyebrow}</p>
         <h1>{title}</h1>

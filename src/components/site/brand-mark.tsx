@@ -2,10 +2,12 @@ import Link from "next/link";
 
 export function BrandSymbol({ size = 34 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" role="img" aria-label="Símbolo SyntaVera">
-      <rect x="1" y="1" width="38" height="38" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M9 11h14l8 9-8 9H9l8-9-8-9Z" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="20" cy="20" r="2.7" fill="currentColor" />
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" role="img" aria-label="Símbolo SyntaVera">
+      <path d="M4 12H16L36 32" stroke="currentColor" strokeWidth="3.5" />
+      <path d="M4 24H28L36 32" stroke="currentColor" strokeWidth="3.5" />
+      <path d="M4 40H28L36 32" stroke="currentColor" strokeWidth="3.5" />
+      <path d="M4 52H16L36 32" stroke="currentColor" strokeWidth="3.5" />
+      <path d="M36 32H60" stroke="currentColor" strokeWidth="7" />
     </svg>
   );
 }
