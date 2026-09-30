@@ -1,0 +1,636 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserKind {
+  INTERNAL
+  CLIENT
+}
+
+enum InternalRole {
+  ADMIN
+  PROJECT_MANAGER
+}
+
+enum ProjectPermission {
+  VIEW
+  COMMENT
+  APPROVE
+  FINANCE
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  REVOKED
+}
+
+enum ProjectStatus {
+  DISCOVERY
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum WorkStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  BLOCKED
+  IN_REVIEW
+  COMPLETED
+}
+
+enum DeliverableStatus {
+  DRAFT
+  IN_REVIEW
+  CHANGES_REQUESTED
+  ACCEPTED
+  ARCHIVED
+}
+
+enum DocumentState {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum FileVisibility {
+  CLIENT
+  INTERNAL
+}
+
+enum DecisionStatus {
+  PROPOSED
+  DECIDED
+  SUPERSEDED
+}
+
+enum InvoiceDocumentState {
+  DRAFT
+  ISSUED
+  VOID
+}
+
+enum InvoicePaymentState {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  SETTLED
+  FAILED
+  REFUNDED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_CLIENT
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+enum MessageVisibility {
+  CLIENT
+  INTERNAL
+}
+
+enum ContactSubmissionStatus {
+  NEW
+  REVIEWED
+  ARCHIVED
+}
+
+enum PublicationStatus {
+  PUBLISHED
+  WITHDRAWN
+}
+
+model User {
+  id                 String               @id @default(uuid()) @db.Uuid
+  name               String
+  email              String               @unique
+  emailVerified      Boolean              @default(false)
+  image              String?
+  kind               UserKind             @default(CLIENT)
+  internalRole       InternalRole?
+  disabledAt         DateTime?
+  organizationId     String?              @db.Uuid
+  organization       Organization?        @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  sessions           Session[]
+  accounts           Account[]
+  projectMemberships ProjectMembership[]
+  managedProjects    ProjectInternal[]    @relation("ProjectManager")
+  authoredVersions   DocumentVersion[]
+  acceptances        Acceptance[]
+  createdDecisions   Decision[]
+  ticketMessages     TicketMessage[]
+  activityEvents     ActivityEvent[]
+  publishedSnapshots ProjectPublication[]
+  auditLogs          AuditLog[]
+  invitationsCreated ClientInvitation[]   @relation("InvitationCreator")
+  contactOwnerships  Contact[]            @relation("ContactOwner")
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(uuid()) @db.Uuid
+  accountId             String
+  providerId            String
+  userId                String    @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model Organization {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  users       User[]
+  contacts    Contact[]
+  projects    Project[]
+  acceptances Acceptance[]
+}
+
+model Contact {
+  id              String        @id @default(uuid()) @db.Uuid
+  organizationId  String?       @db.Uuid
+  organization    Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  ownerId         String?       @db.Uuid
+  owner           User?         @relation("ContactOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  name            String
+  email           String
+  role            String?
+  phone           String?
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  primaryProjects Project[]     @relation("ProjectPrimaryContact")
+
+  @@index([email])
+  @@index([organizationId])
+}
+
+model Project {
+  id               String               @id @default(uuid()) @db.Uuid
+  organizationId   String               @db.Uuid
+  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name             String
+  slug             String               @unique
+  summary          String
+  objective        String               @default("")
+  reference        String?
+  status           ProjectStatus        @default(DISCOVERY)
+  primaryContactId String?              @db.Uuid
+  primaryContact   Contact?             @relation("ProjectPrimaryContact", fields: [primaryContactId], references: [id], onDelete: SetNull)
+  startDate        DateTime?
+  targetDate       DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  memberships      ProjectMembership[]
+  internal         ProjectInternal?
+  phases           Phase[]
+  milestones       Milestone[]
+  deliverables     Deliverable[]
+  files            FileObject[]
+  documents        Document[]
+  acceptances      Acceptance[]
+  decisions        Decision[]
+  invoices         Invoice[]
+  tickets          Ticket[]
+  activity         ActivityEvent[]
+  timeline         TimelineEvent[]
+  publications     ProjectPublication[]
+  audits           AuditLog[]
+  invitations      ClientInvitation[]
+
+  @@index([organizationId])
+  @@index([primaryContactId])
+  @@index([status])
+}
+
+model ProjectMembership {
+  id          String              @id @default(uuid()) @db.Uuid
+  projectId   String              @db.Uuid
+  project     Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId      String              @db.Uuid
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissions ProjectPermission[]
+  status      MembershipStatus    @default(INVITED)
+  invitedAt   DateTime            @default(now())
+  activatedAt DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@unique([projectId, userId])
+  @@index([userId, status])
+}
+
+model ProjectInternal {
+  id               String   @id @default(uuid()) @db.Uuid
+  projectId        String   @unique @db.Uuid
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectManagerId String?  @db.Uuid
+  projectManager   User?    @relation("ProjectManager", fields: [projectManagerId], references: [id], onDelete: SetNull)
+  salesNotes       String?
+  riskSummary      String?
+  budgetNotes      String?
+  deliveryNotes    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Phase {
+  id            String      @id @default(uuid()) @db.Uuid
+  projectId     String      @db.Uuid
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+  clientSummary String?
+  position      Int
+  status        WorkStatus  @default(NOT_STARTED)
+  startsAt      DateTime?
+  endsAt        DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  milestones    Milestone[]
+
+  @@unique([projectId, position])
+  @@index([projectId, status])
+}
+
+model Milestone {
+  id           String        @id @default(uuid()) @db.Uuid
+  projectId    String        @db.Uuid
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phaseId      String?       @db.Uuid
+  phase        Phase?        @relation(fields: [phaseId], references: [id], onDelete: SetNull)
+  title        String
+  description  String?
+  position     Int
+  status       WorkStatus    @default(NOT_STARTED)
+  dueAt        DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deliverables Deliverable[]
+  tickets      Ticket[]
+
+  @@unique([projectId, position])
+  @@index([phaseId])
+}
+
+model Deliverable {
+  id          String            @id @default(uuid()) @db.Uuid
+  projectId   String            @db.Uuid
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestoneId String?           @db.Uuid
+  milestone   Milestone?        @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  title       String
+  description String?
+  status      DeliverableStatus @default(DRAFT)
+  dueAt       DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  documents   Document[]
+  acceptances Acceptance[]
+  tickets     Ticket[]
+
+  @@index([projectId, status])
+}
+
+model FileObject {
+  id                String           @id @default(uuid()) @db.Uuid
+  projectId         String           @db.Uuid
+  project           Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  documentVersionId String?          @unique @db.Uuid
+  documentVersion   DocumentVersion? @relation(fields: [documentVersionId], references: [id], onDelete: SetNull)
+  storageKey        String           @unique
+  originalName      String
+  mimeType          String
+  sizeBytes         BigInt
+  checksum          String?
+  visibility        FileVisibility   @default(CLIENT)
+  uploadedById      String?          @db.Uuid
+  createdAt         DateTime         @default(now())
+
+  @@index([projectId, visibility])
+}
+
+model Document {
+  id            String            @id @default(uuid()) @db.Uuid
+  projectId     String            @db.Uuid
+  project       Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deliverableId String?           @db.Uuid
+  deliverable   Deliverable?      @relation(fields: [deliverableId], references: [id], onDelete: SetNull)
+  title         String
+  state         DocumentState     @default(DRAFT)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  versions      DocumentVersion[]
+
+  @@index([projectId, state])
+}
+
+model DocumentVersion {
+  id           String       @id @default(uuid()) @db.Uuid
+  documentId   String       @db.Uuid
+  document     Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  version      Int
+  label        String?
+  notes        String?
+  authoredById String       @db.Uuid
+  authoredBy   User         @relation(fields: [authoredById], references: [id], onDelete: Restrict)
+  createdAt    DateTime     @default(now())
+  file         FileObject?
+  acceptances  Acceptance[]
+
+  @@unique([documentId, version])
+  @@index([authoredById])
+}
+
+model Acceptance {
+  id                String          @id @default(uuid()) @db.Uuid
+  projectId         String          @db.Uuid
+  project           Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deliverableId     String          @db.Uuid
+  deliverable       Deliverable     @relation(fields: [deliverableId], references: [id], onDelete: Restrict)
+  documentVersionId String          @db.Uuid
+  documentVersion   DocumentVersion @relation(fields: [documentVersionId], references: [id], onDelete: Restrict)
+  acceptedById      String          @db.Uuid
+  acceptedBy        User            @relation(fields: [acceptedById], references: [id], onDelete: Restrict)
+  organizationId    String          @db.Uuid
+  organization      Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  sessionId         String          @db.Uuid
+  statement         String
+  ipHash            String?
+  userAgent         String?
+  acceptedAt        DateTime        @default(now())
+
+  @@unique([documentVersionId, acceptedById])
+  @@index([projectId, acceptedAt])
+  @@index([organizationId, acceptedAt])
+  @@index([sessionId])
+}
+
+model Decision {
+  id          String         @id @default(uuid()) @db.Uuid
+  projectId   String         @db.Uuid
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdById String         @db.Uuid
+  createdBy   User           @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  title       String
+  context     String?
+  outcome     String?
+  status      DecisionStatus @default(PROPOSED)
+  decidedAt   DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  tickets     Ticket[]
+
+  @@index([projectId, status])
+}
+
+model Invoice {
+  id            String               @id @default(uuid()) @db.Uuid
+  projectId     String               @db.Uuid
+  project       Project              @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  externalId    String?
+  number        String
+  documentState InvoiceDocumentState @default(DRAFT)
+  paymentState  InvoicePaymentState  @default(UNPAID)
+  currency      String               @default("USD")
+  totalMinor    Int
+  issuedAt      DateTime?
+  dueAt         DateTime?
+  externalUrl   String?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  payments      Payment[]
+
+  @@unique([projectId, number])
+  @@index([projectId, paymentState])
+}
+
+model Payment {
+  id          String        @id @default(uuid()) @db.Uuid
+  invoiceId   String        @db.Uuid
+  invoice     Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  externalId  String?
+  amountMinor Int
+  currency    String        @default("USD")
+  status      PaymentStatus @default(PENDING)
+  paidAt      DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([invoiceId, status])
+}
+
+model Ticket {
+  id            String          @id @default(uuid()) @db.Uuid
+  projectId     String          @db.Uuid
+  project       Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  subject       String
+  status        TicketStatus    @default(OPEN)
+  priority      TicketPriority  @default(NORMAL)
+  milestoneId   String?         @db.Uuid
+  milestone     Milestone?      @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  deliverableId String?         @db.Uuid
+  deliverable   Deliverable?    @relation(fields: [deliverableId], references: [id], onDelete: SetNull)
+  decisionId    String?         @db.Uuid
+  decision      Decision?       @relation(fields: [decisionId], references: [id], onDelete: SetNull)
+  createdById   String          @db.Uuid
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  messages      TicketMessage[]
+
+  @@index([projectId, status])
+  @@index([projectId, priority])
+  @@index([milestoneId])
+  @@index([deliverableId])
+  @@index([decisionId])
+}
+
+model TicketMessage {
+  id         String            @id @default(uuid()) @db.Uuid
+  ticketId   String            @db.Uuid
+  ticket     Ticket            @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId   String            @db.Uuid
+  author     User              @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  body       String
+  visibility MessageVisibility @default(CLIENT)
+  createdAt  DateTime          @default(now())
+
+  @@index([ticketId, visibility, createdAt])
+}
+
+model ActivityEvent {
+  id              String   @id @default(uuid()) @db.Uuid
+  projectId       String   @db.Uuid
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  actorId         String?  @db.Uuid
+  actor           User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  type            String
+  data            Json
+  visibleToClient Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([projectId, visibleToClient, createdAt])
+}
+
+model TimelineEvent {
+  id              String   @id @default(uuid()) @db.Uuid
+  projectId       String   @db.Uuid
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceType      String
+  sourceId        String?
+  title           String
+  description     String?
+  occurredAt      DateTime
+  visibleToClient Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([projectId, visibleToClient, occurredAt])
+}
+
+model ContactSubmission {
+  id                String                  @id @default(uuid()) @db.Uuid
+  name              String
+  email             String
+  organization      String?
+  role              String?
+  context           String
+  area              String?
+  budget            String?
+  timeline          String?
+  privacyVersion    String
+  privacyAcceptedAt DateTime
+  status            ContactSubmissionStatus @default(NEW)
+  ipHash            String?
+  userAgent         String?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+model ProjectPublication {
+  id            String            @id @default(uuid()) @db.Uuid
+  projectId     String            @db.Uuid
+  project       Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  version       Int
+  status        PublicationStatus @default(PUBLISHED)
+  snapshot      Json
+  changeSummary String?
+  publishedById String            @db.Uuid
+  publishedBy   User              @relation(fields: [publishedById], references: [id], onDelete: Restrict)
+  publishedAt   DateTime          @default(now())
+  withdrawnAt   DateTime?
+
+  @@unique([projectId, version])
+  @@index([projectId, status, publishedAt])
+}
+
+model ClientInvitation {
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String    @db.Uuid
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  email       String
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  revokedAt   DateTime?
+  createdById String    @db.Uuid
+  createdBy   User      @relation("InvitationCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime  @default(now())
+
+  @@index([email, expiresAt])
+  @@index([projectId])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String?  @db.Uuid
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  projectId  String?  @db.Uuid
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  action     String
+  targetType String
+  targetId   String?
+  metadata   Json
+  ipHash     String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([projectId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([targetType, targetId])
+}
+
+model RateLimitBucket {
+  keyHash     String   @id
+  bucketStart DateTime
+  count       Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  @@index([bucketStart])
+}
