@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:17-bookworm
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5545}:5432"
+    environment:
+      POSTGRES_DB: syntavera
+      POSTGRES_USER: syntavera
+      POSTGRES_PASSWORD: syntavera-local-only
+    volumes:
+      - syntavera-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U syntavera -d syntavera"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    build:
+      context: .
+      target: migrator
+    environment:
+      DATABASE_URL: postgresql://syntavera:syntavera-local-only@db:5432/syntavera?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      APP_URL: http://localhost:3000
+      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_SECRET: local-compose-secret-change-before-any-shared-use
+      DATABASE_URL: postgresql://syntavera:syntavera-local-only@db:5432/syntavera?schema=public
+      PUBLIC_CONTACT_ENABLED: "false"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+volumes:
+  syntavera-postgres:
