@@ -10,9 +10,10 @@ Fecha: 2026-09-30. Entorno: macOS arm64, Node.js 24.21.0 mediante mise y Postgre
 - `pnpm prisma:validate`: schema válido.
 - `prisma migrate status`: cuatro migraciones aplicadas; base actualizada.
 - `pnpm build`: build optimizado de Next.js correcto, 21 páginas estáticas generadas y rutas dinámicas compiladas.
-- Playwright público y autenticado: 21 pruebas correctas en 1440×1000, 768×1024 y 390×844.
-- Regresión visual: 3 snapshots correctos en los mismos breakpoints, con animaciones deshabilitadas y `prefers-reduced-motion`.
-- Smoke de producción en puerto 3100: `/api/health` respondió `200` con `database: ok`; home respondió `200`; `/admin` respondió `307` hacia login. CSP, HSTS, no-sniff, frame deny, permissions policy y `X-Robots-Tag` fueron observados.
+- Playwright final: 24 pruebas públicas/visuales correctas en 1440×900, 768×1024 y 390×844. Las 6 pruebas autenticadas se repitieron por separado, con credenciales efímeras sobre la base aislada, y también pasaron: 30/30 verificadas.
+- Auditoría visual: 15 pares referencia/implementación capturados con DPR 1 y sin P0/P1 abiertos. Las 30 capturas y mediciones están en [la auditoría de paridad](visual-parity-audit.md).
+- Regresión visual: 9 snapshots públicos correctos y deterministas en los tres breakpoints, con animaciones deshabilitadas, `prefers-reduced-motion` y ejecución habilitada en CI.
+- Smoke de la imagen Docker final: contenedor `healthy`; `/api/health` respondió `200` con `database: ok` y 2 ms de latencia. CSP, HSTS, no-sniff, frame deny, permissions policy y políticas cross-origin fueron observadas.
 
 ## Recorrido funcional real
 
@@ -27,9 +28,13 @@ Se verificó que:
 - plan, documentos, entregables, facturación, actividad y soporte cargan con filtros de servidor;
 - los datos internos y documentos en borrador no cruzan al snapshot.
 
+## Docker
+
+Se retiró la directiva innecesaria `docker/dockerfile:1.7`. El build real `docker build --target runner -t syntavera:predeploy .` terminó correctamente para Linux arm64. La imagen se arrancó de forma efímera contra PostgreSQL local y pasó su healthcheck; después se retiró el contenedor de smoke. El digest debe fijarse en el registry al publicar staging, para promover exactamente el mismo artefacto a producción.
+
 ## Límites externos abiertos
 
-- La imagen Docker multi-stage se intentó construir dos veces; Docker Desktop agotó el tiempo al resolver `docker/dockerfile:1.7` desde Docker Hub, antes de ejecutar una instrucción del proyecto. El build Next productivo y su smoke local sí quedaron verificados.
-- No se ejecutó un upload real a R2 ni una entrega SMTP real porque no se proporcionaron credenciales. Las abstracciones, validaciones, confirmación `HeadObject`, correo de desarrollo y fallos explícitos de producción sí están implementados.
-- No se desplegó staging o producción porque no se proporcionaron destino, secretos, DNS ni acceso a Cloudflare/Coolify/Traefik.
+- No se ejecutó un upload real a R2 ni una entrega SMTP externa porque no se proporcionaron credenciales. Las abstracciones, validaciones, confirmación `HeadObject`, correo de desarrollo y fallos explícitos de producción sí están implementados.
+- No se desplegó staging ni producción porque no se proporcionaron acceso y secretos de Cloudflare/Coolify. El procedimiento exacto queda en [staging-deployment.md](staging-deployment.md).
 - El formulario de contacto productivo sigue cerrado deliberadamente hasta instalar texto legal aprobado y fijar `PRIVACY_POLICY_VERSION`.
+- Producción no fue desplegada ni modificada.
