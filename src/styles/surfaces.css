@@ -1,0 +1,37 @@
+:root{
+/* Radii: nearly square. Engineering drawings, not consumer apps. */
+--radius-0:0;
+--radius-1:2px;   /* badges, inputs, buttons */
+--radius-2:3px;   /* cards */
+--radius-3:6px;   /* modal / large panels */
+--radius-pill:999px; /* only for the mono capability chips */
+
+--border-hairline:1px solid var(--line-hairline); /* @kind other */
+--border-default:1px solid var(--line-default); /* @kind other */
+--border-strong:1px solid var(--line-strong); /* @kind other */
+--border-on-dark:1px solid var(--line-on-dark); /* @kind other */
+--border-accent-rule:2px solid var(--signal-4); /* @kind other */
+
+/* Elevation: shadows are cast light, not glow. Cards prefer borders over shadow. */
+--shadow-0:none;
+--shadow-1:0 1px 2px rgba(12,15,18,.05);
+--shadow-2:0 2px 6px rgba(12,15,18,.06),0 1px 1px rgba(12,15,18,.04);
+--shadow-3:0 10px 28px -12px rgba(12,15,18,.18),0 2px 6px rgba(12,15,18,.05);
+--shadow-4:0 24px 60px -24px rgba(12,15,18,.26);
+--shadow-inset-hairline:inset 0 0 0 1px var(--line-hairline);
+--shadow-focus:0 0 0 3px rgba(26,100,133,.28);
+
+/* Blueprint grid: the one recurring texture. Used at low opacity behind
+   diagrams, hero and dark Labs sections. Never decorative elsewhere. */
+--grid-size:32px; /* @kind other */
+--pattern-grid:linear-gradient(to right,var(--line-grid) 1px,transparent 1px),linear-gradient(to bottom,var(--line-grid) 1px,transparent 1px); /* @kind other */
+--pattern-grid-dark:linear-gradient(to right,var(--line-grid-on-dark) 1px,transparent 1px),linear-gradient(to bottom,var(--line-grid-on-dark) 1px,transparent 1px); /* @kind other */
+--pattern-dotgrid:radial-gradient(var(--line-grid) 1px,transparent 1px); /* @kind other */
+
+/* Protection: dark sections fade to ground rather than butting a hard edge. */
+--fade-to-dark:linear-gradient(to bottom,rgba(12,15,18,0),var(--graphite-1)); /* @kind other */
+--fade-to-paper:linear-gradient(to bottom,rgba(250,249,246,0),var(--paper-1)); /* @kind other */
+
+/* sticky header only */
+--blur-panel:saturate(120%) blur(10px); /* @kind other */
+}

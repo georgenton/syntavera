@@ -1,0 +1,68 @@
+:root{
+/* ---------- Base ramps ---------- */
+/* Paper: warm, low-chroma off-white. The default ground of the site. */
+--paper-0:#FFFFFF;--paper-1:#FAF9F6;--paper-2:#F4F2ED;--paper-3:#EBE8E1;--paper-4:#DFDBD2;
+/* Graphite: cool near-black ramp used for ink and for the dark "systems" moments. */
+--graphite-1:#0C0F12;--graphite-2:#14181C;--graphite-3:#1D2328;--graphite-4:#2A3238;--graphite-5:#3D474E;
+--graphite-6:#5C686F;--graphite-7:#8A959B;--graphite-8:#B6BEC2;--graphite-9:#D8DDDF;
+/* Signal: deep instrument blue. The single brand accent. Never a gradient. */
+--signal-1:#08202E;--signal-2:#0D3448;--signal-3:#12475F;--signal-4:#1A6485;--signal-5:#3E88A9;--signal-6:#9CC3D4;--signal-7:#E4EEF3;
+/* Verdigris: secondary technical hue, for diagrams and evaluated/proven states. */
+--verdigris-3:#12503F;--verdigris-5:#2C8168;--verdigris-7:#DCEAE4;
+/* Amber: caution / in-progress / co-development. Earthy, never neon. */
+--amber-3:#7A4A11;--amber-5:#B4741E;--amber-7:#F3E8D5;
+/* Clay: limits, risks, "what this does not demonstrate". */
+--clay-3:#7A2B22;--clay-5:#A9453A;--clay-7:#F2E1DE;
+
+/* ---------- Semantic: text ---------- */
+--text-primary:var(--graphite-1);
+--text-body:var(--graphite-3);
+--text-secondary:var(--graphite-6);
+--text-muted:var(--graphite-7);
+--text-accent:var(--signal-3);
+--text-on-dark:#F2F4F5;
+--text-on-dark-secondary:var(--graphite-8);
+--text-on-accent:#FFFFFF;
+--text-link:var(--signal-3);
+--text-link-hover:var(--signal-2);
+
+/* ---------- Semantic: surfaces ---------- */
+--surface-page:var(--paper-1);
+--surface-raised:var(--paper-0);
+--surface-sunken:var(--paper-2);
+--surface-card:var(--paper-0);
+--surface-card-hover:#FFFFFF;
+--surface-inset:var(--paper-2);
+--surface-dark:var(--graphite-1);
+--surface-dark-raised:var(--graphite-2);
+--surface-dark-inset:#080A0C;
+--surface-accent:var(--signal-2);
+--surface-accent-quiet:var(--signal-7);
+
+/* ---------- Semantic: lines ---------- */
+--line-hairline:rgba(12,15,18,.10);
+--line-default:rgba(12,15,18,.16);
+--line-strong:rgba(12,15,18,.30);
+--line-on-dark:rgba(255,255,255,.14);
+--line-on-dark-strong:rgba(255,255,255,.28);
+--line-accent:var(--signal-4);
+--line-grid:rgba(12,15,18,.055);
+--line-grid-on-dark:rgba(255,255,255,.07);
+
+/* ---------- Semantic: interactive ---------- */
+--action-primary:var(--graphite-1);
+--action-primary-hover:var(--signal-2);
+--action-primary-active:var(--signal-1);
+--action-secondary-border:var(--line-strong);
+--action-quiet-hover:var(--paper-2);
+--focus-ring:var(--signal-4);
+--focus-ring-on-dark:var(--signal-5);
+
+/* ---------- Semantic: maturity scale ---------- */
+/* Colour is always paired with the literal label text (WCAG 1.4.1). */
+--maturity-lab-fg:var(--graphite-6);--maturity-lab-bg:var(--paper-2);--maturity-lab-line:var(--line-default);
+--maturity-demo-fg:var(--signal-3);--maturity-demo-bg:var(--signal-7);--maturity-demo-line:#BFD8E3;
+--maturity-codev-fg:var(--amber-3);--maturity-codev-bg:var(--amber-7);--maturity-codev-line:#E3CFA9;
+--maturity-pilot-fg:var(--verdigris-3);--maturity-pilot-bg:var(--verdigris-7);--maturity-pilot-line:#B9D5C9;
+--maturity-limit-fg:var(--clay-3);--maturity-limit-bg:var(--clay-7);--maturity-limit-line:#E3C4BF;
+}

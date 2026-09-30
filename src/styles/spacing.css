@@ -1,0 +1,23 @@
+:root{
+--space-0:0;--space-1:2px;--space-2:4px;--space-3:8px;--space-4:12px;--space-5:16px;
+--space-6:20px;--space-7:24px;--space-8:32px;--space-9:40px;--space-10:48px;
+--space-11:64px;--space-12:80px;--space-13:96px;--space-14:128px;--space-15:160px;
+
+/* Layout */
+--container-max:1240px; /* @kind spacing */
+--container-narrow:760px; /* @kind spacing */
+--container-wide:1440px; /* @kind spacing */
+--gutter:clamp(20px,5vw,64px); /* @kind spacing */
+--section-y:clamp(64px,9vw,128px); /* @kind spacing */
+--section-y-tight:clamp(48px,6vw,80px); /* @kind spacing */
+--grid-columns:12; /* @kind spacing */
+--grid-gap:clamp(16px,2vw,32px); /* @kind spacing */
+
+/* Component rhythm */
+--stack-xs:var(--space-3);--stack-sm:var(--space-5);--stack-md:var(--space-7);
+--stack-lg:var(--space-10);--stack-xl:var(--space-12);
+--card-padding:clamp(20px,2.2vw,32px);
+--control-height:44px;
+--control-height-sm:36px;
+--control-padding-x:var(--space-6);
+}

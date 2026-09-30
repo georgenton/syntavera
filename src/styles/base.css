@@ -1,0 +1,31 @@
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--surface-page);color:var(--text-body);font-family:var(--font-body);font-size:var(--size-body);line-height:var(--leading-body);font-weight:var(--weight-regular);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+h1,h2,h3,h4{font-family:var(--font-heading);color:var(--text-primary);font-weight:var(--weight-regular);margin:0;text-wrap:pretty}
+h1{font-size:var(--size-display-1);line-height:var(--leading-display);letter-spacing:var(--tracking-display)}
+h2{font-size:var(--size-h2);line-height:var(--leading-heading);letter-spacing:var(--tracking-heading)}
+h3{font-size:var(--size-h3);line-height:var(--leading-heading);letter-spacing:var(--tracking-heading)}
+h4{font-size:var(--size-h4);line-height:1.32}
+p{margin:0;text-wrap:pretty}
+a{color:var(--text-link);text-decoration:none;border-bottom:1px solid rgba(18,71,95,.32);transition:var(--transition-control)}
+a:hover{color:var(--text-link-hover);border-bottom-color:var(--signal-3)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px;border-radius:var(--radius-1)}
+button{font:inherit;color:inherit}
+small{font-size:var(--size-caption)}
+code,kbd,pre{font-family:var(--font-mono);font-size:.92em}
+hr{border:0;border-top:1px solid var(--line-hairline);margin:var(--space-8) 0}
+::selection{background:var(--signal-7);color:var(--signal-1)}
+
+/* Reusable structural helpers. Components stay self-contained; these are for
+   page-level composition inside UI kits and cards. */
+.sv-container{width:100%;max-width:var(--container-max);margin-inline:auto;padding-inline:var(--gutter)}
+.sv-eyebrow{font-family:var(--font-label);font-size:var(--size-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-secondary)}
+.sv-lede{font-size:var(--size-body-lg);line-height:var(--leading-relaxed);color:var(--text-body);max-width:var(--measure-lede)}
+.sv-prose{max-width:var(--measure-prose)}
+.sv-rule{height:1px;background:var(--line-hairline)}
+.sv-dark{background:var(--surface-dark);color:var(--text-on-dark)}
+.sv-dark h1,.sv-dark h2,.sv-dark h3,.sv-dark h4{color:var(--text-on-dark)}
+.sv-dark .sv-eyebrow{color:var(--signal-6)}
+.sv-dark a{color:var(--signal-6);border-bottom-color:rgba(156,195,212,.34)}
+.sv-grid-bg{background-image:var(--pattern-grid);background-size:var(--grid-size) var(--grid-size)}
+.sv-dark .sv-grid-bg,.sv-grid-bg--dark{background-image:var(--pattern-grid-dark);background-size:var(--grid-size) var(--grid-size)}

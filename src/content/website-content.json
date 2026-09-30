@@ -1,0 +1,278 @@
+{
+  "nav": [
+    {
+      "label": "Inicio",
+      "href": "#/"
+    },
+    {
+      "label": "SyntaVera Labs",
+      "href": "#/labs"
+    },
+    {
+      "label": "Cómo trabajamos",
+      "href": "#/how-we-work"
+    },
+    {
+      "label": "Capacidades",
+      "href": "#/capabilities"
+    },
+    {
+      "label": "Nosotros",
+      "href": "#/about"
+    },
+    {
+      "label": "Insights",
+      "href": "#/insights"
+    }
+  ],
+  "hero": {
+    "eyebrow": "Ingeniería de inteligencia artificial aplicada",
+    "title": "Convertimos problemas reales en sistemas inteligentes que puedes ver, probar y evaluar.",
+    "subtitle": "Combinamos arquitectura de software, producto, datos, IA y conocimiento experto para construir prototipos, pilotos y sistemas aplicados al trabajo real.",
+    "microproof": [
+      "Software",
+      "Arquitectura",
+      "GenAI",
+      "ML",
+      "MLOps",
+      "Visión",
+      "Datos",
+      "Evaluación"
+    ]
+  },
+  "problem": {
+    "title": "La IA empieza antes del modelo.",
+    "body": "Muchas organizaciones tienen procesos, documentos, datos y personas expertas, pero todavía no saben qué parte conviene mejorar con IA ni cómo convertir una idea en algo útil. Nosotros empezamos por el trabajo y la decisión, hacemos visible la oportunidad y construimos evidencia antes de escalar."
+  },
+  "systemStages": [
+    {
+      "label": "Señales",
+      "items": [
+        "Registros y sensores",
+        "Documentos y formatos",
+        "Trabajo de campo"
+      ]
+    },
+    {
+      "label": "Conocimiento",
+      "items": [
+        "Normalización",
+        "Recuperación con fuentes",
+        "Reglas del dominio"
+      ],
+      "note": "Trazable"
+    },
+    {
+      "label": "Decisión",
+      "items": [
+        "Propuesta explicable",
+        "Prioridad y alerta"
+      ],
+      "note": "La IA propone"
+    },
+    {
+      "label": "Verificación",
+      "items": [
+        "Revisión humana",
+        "Evaluación",
+        "Registro"
+      ],
+      "note": "La persona decide"
+    }
+  ],
+  "labs": [
+    {
+      "slug": "drillops",
+      "title": "DrillOps Intelligence",
+      "territory": "Operational Intelligence",
+      "level": "demo",
+      "maturityLabel": "Capability Demo",
+      "promise": "Datos, cálculos y señales de perforación convertidos en inteligencia operacional explicable.",
+      "disclosure": "No customer deployment · Not a packaged product",
+      "stack": [
+        "Señales",
+        "Cálculo",
+        "Recuperación",
+        "Evaluación"
+      ]
+    },
+    {
+      "slug": "sst-intelligence",
+      "title": "SST Intelligence",
+      "territory": "Risk Intelligence",
+      "level": "codev",
+      "maturityLabel": "Advanced Demo · Co-development",
+      "promise": "Riesgos, inspecciones, evidencia, acciones y conocimiento experto dentro de un sistema operacional trazable.",
+      "disclosure": "Co-development · Not a packaged product",
+      "stack": [
+        "Workflow",
+        "Documentos",
+        "Trazabilidad"
+      ]
+    },
+    {
+      "slug": "crm-intelligence",
+      "title": "CRM Intelligence · Revenue Command Center",
+      "territory": "Sales Intelligence",
+      "level": "codev",
+      "maturityLabel": "Co-development · Commercial validation",
+      "promise": "Pipeline, cobertura, forecast, alertas y contexto para mejorar la revisión comercial.",
+      "disclosure": "Commercial validation in progress · Not a packaged product",
+      "stack": [
+        "Pipeline",
+        "Alertas",
+        "Contexto"
+      ]
+    },
+    {
+      "slug": "environmental-intelligence",
+      "title": "Environmental Intelligence · EIA Studio",
+      "territory": "Environmental Intelligence",
+      "level": "pilot",
+      "maturityLabel": "Demo · Pilot candidate",
+      "promise": "Datos de campo, documentos y criterio profesional transformados en un workflow ambiental trazable.",
+      "disclosure": "Pilot candidate · No customer deployment",
+      "stack": [
+        "Campo",
+        "Documentos",
+        "Workflow"
+      ]
+    },
+    {
+      "slug": "llm-twin",
+      "title": "LLM Twin",
+      "territory": "Knowledge Systems",
+      "level": "lab",
+      "maturityLabel": "In the Lab · Planned",
+      "promise": "Exploración de cómo el conocimiento de una persona experta podría asistir su propio trabajo sin sustituir su criterio.",
+      "disclosure": "Planned · Nothing built to show yet",
+      "stack": [
+        "Exploración"
+      ]
+    }
+  ],
+  "process": [
+    {
+      "label": "Understand",
+      "description": "Problema, usuario, workflow y baseline.",
+      "output": "Mapa del trabajo real"
+    },
+    {
+      "label": "Frame",
+      "description": "Datos, fuentes, riesgos y criterio de éxito.",
+      "output": "Criterio de éxito acordado"
+    },
+    {
+      "label": "Prototype",
+      "description": "Hacer visible la hipótesis.",
+      "output": "Prototipo navegable"
+    },
+    {
+      "label": "Prove",
+      "description": "Piloto y evaluación.",
+      "output": "Evaluación y gate de decisión"
+    },
+    {
+      "label": "Build",
+      "description": "Ingeniería e integración.",
+      "output": "Sistema integrado"
+    },
+    {
+      "label": "Operate",
+      "description": "Observabilidad, seguridad, costo y evolución.",
+      "output": "Operación medible"
+    }
+  ],
+  "capabilities": [
+    {
+      "index": "01",
+      "title": "AI Product & Software Engineering",
+      "description": "Producto, UX, arquitectura, backend, frontend, APIs, cloud e integración.",
+      "items": [
+        "Arquitectura de sistemas",
+        "Integración con lo que ya existe"
+      ]
+    },
+    {
+      "index": "02",
+      "title": "Generative AI & Knowledge Systems",
+      "description": "LLMs, RAG, documentos, agentes, memoria, fuentes y evaluación.",
+      "items": [
+        "Recuperación con fuentes citables",
+        "Agentes con límites explícitos"
+      ]
+    },
+    {
+      "index": "03",
+      "title": "Machine Learning & Intelligent Systems",
+      "description": "Predicción, anomalías, recomendación, optimización y deep learning cuando corresponde.",
+      "items": [
+        "Baseline antes de modelo",
+        "Métrica ligada a la decisión"
+      ]
+    },
+    {
+      "index": "04",
+      "title": "Computer Vision & Signals",
+      "description": "Visión, imágenes, señales y geoespacial según el caso.",
+      "items": [
+        "Inspección asistida",
+        "Series y señales"
+      ]
+    },
+    {
+      "index": "05",
+      "title": "AI Trust & Operations",
+      "description": "MLOps/LLMOps, observabilidad, costos, seguridad, privacidad, gobernanza y human-in-the-loop.",
+      "items": [
+        "Costo observable",
+        "Participación humana explícita"
+      ]
+    }
+  ],
+  "trust": [
+    {
+      "index": "01",
+      "title": "Madurez declarada",
+      "description": "Cada demo dice qué es, en qué estado está y qué no demuestra."
+    },
+    {
+      "index": "02",
+      "title": "Fuentes y trazabilidad",
+      "description": "Si el sistema afirma algo, se puede seguir de dónde viene."
+    },
+    {
+      "index": "03",
+      "title": "Evaluación antes de escalar",
+      "description": "Definimos criterio de éxito y medimos contra él antes de proponer una construcción mayor."
+    },
+    {
+      "index": "04",
+      "title": "Seguridad y privacidad",
+      "description": "Datos, accesos y retención se deciden al inicio, no al final."
+    },
+    {
+      "index": "05",
+      "title": "Participación humana",
+      "description": "La IA propone; la persona con criterio decide y queda registrado."
+    },
+    {
+      "index": "06",
+      "title": "Propiedad intelectual clara",
+      "description": "El conocimiento del experto sigue siendo del experto."
+    },
+    {
+      "index": "07",
+      "title": "Costos observables",
+      "description": "El costo de operar el sistema se mide y se muestra."
+    }
+  ],
+  "finalCta": {
+    "title": "¿Tienes un proceso que podría pensar mejor con IA?",
+    "body": "Muéstranos dónde se pierde tiempo, contexto o criterio. Podemos empezar haciendo visible una prueba pequeña antes de comprometer una construcción grande.",
+    "cta": {
+      "label": "Explorar una oportunidad",
+      "href": "#/contact"
+    }
+  }
+}

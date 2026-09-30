@@ -1,0 +1,27 @@
+:root{
+/* Motion explains systems. It never announces itself. */
+--duration-instant:80ms; /* @kind other */
+--duration-fast:140ms; /* @kind other */
+--duration-base:220ms; /* @kind other */
+--duration-slow:420ms; /* @kind other */
+--duration-reveal:700ms; /* @kind other */
+--ease-standard:cubic-bezier(.2,.6,.2,1); /* @kind other */
+--ease-out:cubic-bezier(0,.6,.2,1); /* @kind other */
+--ease-in-out:cubic-bezier(.5,0,.3,1); /* @kind other */
+/* diagram traces, steppers */
+--ease-signal:cubic-bezier(.32,.72,0,1); /* @kind other */
+--transition-control:color var(--duration-fast) var(--ease-standard),background-color var(--duration-fast) var(--ease-standard),border-color var(--duration-fast) var(--ease-standard),box-shadow var(--duration-fast) var(--ease-standard); /* @kind other */
+--transition-card:border-color var(--duration-base) var(--ease-standard),box-shadow var(--duration-base) var(--ease-standard),transform var(--duration-base) var(--ease-standard); /* @kind other */
+--lift-card:translateY(-2px); /* @kind other */
+--press-scale:0.995; /* @kind other */
+}
+@media (prefers-reduced-motion:reduce){
+:root{
+--duration-instant:0ms; /* @kind other */
+--duration-fast:0ms; /* @kind other */
+--duration-base:0ms; /* @kind other */
+--duration-slow:0ms; /* @kind other */
+--duration-reveal:0ms; /* @kind other */
+--lift-card:none; /* @kind other */
+}
+}
