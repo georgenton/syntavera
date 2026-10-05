@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 const email = process.env.E2E_ADMIN_EMAIL;
 const password = process.env.E2E_ADMIN_PASSWORD;
 
-test.describe("authenticated backoffice", () => {
+test.describe("authenticated backoffice @authenticated", () => {
   test.skip(!email || !password, "Requires the explicit isolated-database E2E administrator");
 
   test("blocks admin without a session", async ({ browser }) => {

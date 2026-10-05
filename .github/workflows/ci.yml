@@ -44,9 +44,28 @@ jobs:
         with:
           node-version: 24.21.0
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:e2e --project=desktop-1440
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Generate Prisma Client
+        run: pnpm prisma:generate
+        env:
+          DATABASE_URL: postgresql://build:build@127.0.0.1:5432/build
+      - name: Install pinned Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run public end-to-end tests
+        run: pnpm test:e2e --project=desktop-1440 --grep-invert @authenticated
         env:
           BETTER_AUTH_SECRET: ci-secret-that-is-longer-than-thirty-two-characters
           DATABASE_URL: postgresql://build:build@127.0.0.1:5432/build
+          PUBLIC_CONTACT_ENABLED: "false"
+          CONTACT_DELIVERY_VERIFIED: "false"
+      - name: Upload Playwright failure diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
+          retention-days: 7

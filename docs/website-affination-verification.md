@@ -77,7 +77,7 @@ Labs muestra exactamente `Ficha de capacidad`, `Co-desarrollo`, `Validación com
 - [Contacto después](evidence/public-contact-after-1440.png) — build optimizado local, recolección bloqueada.
 - [Labs después](evidence/public-labs-after-1440.png) — build optimizado local, sin medio opcional.
 - [Nosotros después](evidence/public-about-after-1440.png) — build optimizado local.
-- Quince snapshots de regresión (cinco rutas por tres breakpoints) están en `tests/e2e/visual-reference.spec.ts-snapshots/`.
+- Quince snapshots Darwin (cinco rutas por tres breakpoints) y cinco referencias Linux desktop para CI están en `tests/e2e/visual-reference.spec.ts-snapshots/`.
 
 ## Bloqueos y autorizaciones
 
