@@ -4,6 +4,8 @@ const routes = [
   { name: "home", path: "/" },
   { name: "labs", path: "/labs" },
   { name: "how-we-work", path: "/how-we-work" },
+  { name: "about", path: "/about" },
+  { name: "contact", path: "/contact" },
 ] as const;
 
 for (const route of routes) {

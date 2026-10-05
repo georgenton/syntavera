@@ -6,7 +6,7 @@ import { publicNav } from "@/content/site";
 import { ButtonLink } from "@/components/ui/button";
 import { BrandMark } from "./brand-mark";
 
-export function SiteHeader() {
+export function SiteHeader({ contactAvailable }: { contactAvailable: boolean }) {
   const pathname = usePathname();
   const onDark = pathname === "/labs" || pathname.startsWith("/labs/");
   return (
@@ -21,7 +21,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="site-header__cta">
-          <ButtonLink href="/contact" variant="secondary" size="sm">Explorar una oportunidad <span aria-hidden="true">→</span></ButtonLink>
+          <ButtonLink href={contactAvailable ? "/contact" : "/how-we-work"} variant="secondary" size="sm">{contactAvailable ? "Hablemos de tu proceso" : "Conoce cómo trabajamos"} <span aria-hidden="true">→</span></ButtonLink>
         </div>
         <details className="mobile-nav">
           <summary aria-label="Menú">Menú</summary>
@@ -31,7 +31,7 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            <Link href="/contact">Explorar una oportunidad →</Link>
+            <Link href={contactAvailable ? "/contact" : "/how-we-work"}>{contactAvailable ? "Hablemos de tu proceso" : "Conoce cómo trabajamos"} →</Link>
           </nav>
         </details>
       </div>

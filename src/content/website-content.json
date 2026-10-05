@@ -27,8 +27,8 @@
   ],
   "hero": {
     "eyebrow": "Ingeniería de inteligencia artificial aplicada",
-    "title": "Convertimos problemas reales en sistemas inteligentes que puedes ver, probar y evaluar.",
-    "subtitle": "Combinamos arquitectura de software, producto, datos, IA y conocimiento experto para construir prototipos, pilotos y sistemas aplicados al trabajo real.",
+    "title": "Convertimos conocimiento experto en software e IA para tu operación",
+    "subtitle": "Diseñamos prototipos y sistemas que conectan documentos, datos y procesos. Empezamos por una oportunidad concreta y evaluamos qué aporta antes de escalar",
     "microproof": [
       "Software",
       "Arquitectura",
@@ -86,99 +86,131 @@
       "title": "DrillOps Intelligence",
       "territory": "Operational Intelligence",
       "level": "demo",
-      "maturityLabel": "Capability Demo",
+      "maturityLabel": "Ficha de capacidad",
       "promise": "Datos, cálculos y señales de perforación convertidos en inteligencia operacional explicable.",
-      "disclosure": "No customer deployment · Not a packaged product",
+      "disclosure": "Sin evidencia interactiva publicada · No es un producto empaquetado",
       "stack": [
         "Señales",
         "Cálculo",
         "Recuperación",
         "Evaluación"
-      ]
+      ],
+      "case": {
+        "problem": "Reunir señales, cálculos y referencias técnicas sin perder el rastro de cómo se llega a una recomendación operacional.",
+        "user": "Equipos que revisan información operacional y necesitan conservar el criterio técnico en la decisión.",
+        "workflow": "Explorar señales y cálculos, recuperar contexto relevante y revisar una propuesta antes de actuar.",
+        "built": "Una definición pública del flujo, sus capas y los puntos de verificación humana.",
+        "aiRole": "Organizar señales y contexto para preparar una propuesta explicable.",
+        "humanRole": "Validar cálculos, fuentes y condiciones operativas antes de decidir.",
+        "evidence": "Esta página documenta la capacidad y sus límites; no publica todavía un recorrido interactivo.",
+        "limits": "No demuestra precisión, desempeño en campo, integración ni resultados sobre datos de una operación real.",
+        "nextGate": "Definir un conjunto de datos, una decisión concreta y un criterio de evaluación antes de construir una prueba."
+      }
     },
     {
       "slug": "sst-intelligence",
       "title": "SST Intelligence",
       "territory": "Risk Intelligence",
       "level": "codev",
-      "maturityLabel": "Advanced Demo · Co-development",
+      "maturityLabel": "Co-desarrollo",
       "promise": "Riesgos, inspecciones, evidencia, acciones y conocimiento experto dentro de un sistema operacional trazable.",
-      "disclosure": "Co-development · Not a packaged product",
+      "disclosure": "Trabajo en co-desarrollo · No es un producto empaquetado",
       "stack": [
         "Workflow",
         "Documentos",
         "Trazabilidad"
-      ]
+      ],
+      "case": {
+        "problem": "Conectar inspecciones, evidencia, riesgos y acciones correctivas sin separar el registro del criterio experto.",
+        "user": "Personas que revisan condiciones de seguridad y hacen seguimiento a acciones.",
+        "workflow": "Registrar una observación, relacionar evidencia, revisar el riesgo y dar seguimiento a una acción.",
+        "built": "Una línea de trabajo en co-desarrollo que organiza el workflow y hace visible la trazabilidad esperada.",
+        "aiRole": "Ayudar a recuperar contexto y estructurar información para revisión.",
+        "humanRole": "Confirmar el riesgo, decidir la acción y verificar su cierre.",
+        "evidence": "La evidencia pública disponible es esta descripción de alcance y madurez; no se publica una operación de cliente.",
+        "limits": "No demuestra cumplimiento normativo, reducción de incidentes ni desempeño productivo.",
+        "nextGate": "Acordar el proceso a observar, los roles responsables y la evidencia mínima de una prueba."
+      }
     },
     {
       "slug": "crm-intelligence",
       "title": "CRM Intelligence · Revenue Command Center",
       "territory": "Sales Intelligence",
       "level": "codev",
-      "maturityLabel": "Co-development · Commercial validation",
+      "maturityLabel": "Validación comercial",
       "promise": "Pipeline, cobertura, forecast, alertas y contexto para mejorar la revisión comercial.",
-      "disclosure": "Commercial validation in progress · Not a packaged product",
+      "disclosure": "Validación en curso · No es un producto empaquetado",
       "stack": [
         "Pipeline",
         "Alertas",
         "Contexto"
-      ]
+      ],
+      "case": {
+        "problem": "Revisar pipeline, cobertura y forecast con contexto suficiente para detectar qué requiere atención.",
+        "user": "Equipos que preparan y conducen revisiones comerciales.",
+        "workflow": "Consolidar información, detectar señales, revisar su contexto y decidir una siguiente acción.",
+        "built": "Una definición de capacidad para un centro de revisión comercial; su validación continúa.",
+        "aiRole": "Priorizar señales y reunir contexto para la revisión.",
+        "humanRole": "Interpretar el contexto, corregir supuestos y decidir la acción comercial.",
+        "evidence": "La página declara el alcance en validación; no presenta métricas ni un despliegue comercial.",
+        "limits": "No demuestra mejora de conversión, exactitud de forecast ni integración con un CRM real.",
+        "nextGate": "Seleccionar una revisión concreta y acordar qué señal sería útil antes de integrar fuentes."
+      }
     },
     {
       "slug": "environmental-intelligence",
       "title": "Environmental Intelligence · EIA Studio",
       "territory": "Environmental Intelligence",
       "level": "pilot",
-      "maturityLabel": "Demo · Pilot candidate",
+      "maturityLabel": "Candidato a piloto",
       "promise": "Datos de campo, documentos y criterio profesional transformados en un workflow ambiental trazable.",
-      "disclosure": "Pilot candidate · No customer deployment",
+      "disclosure": "Candidato a piloto · Sin despliegue de cliente",
       "stack": [
         "Campo",
         "Documentos",
         "Workflow"
-      ]
-    },
-    {
-      "slug": "llm-twin",
-      "title": "LLM Twin",
-      "territory": "Knowledge Systems",
-      "level": "lab",
-      "maturityLabel": "In the Lab · Planned",
-      "promise": "Exploración de cómo el conocimiento de una persona experta podría asistir su propio trabajo sin sustituir su criterio.",
-      "disclosure": "Planned · Nothing built to show yet",
-      "stack": [
-        "Exploración"
-      ]
+      ],
+      "case": {
+        "problem": "Relacionar datos de campo, documentos y criterio profesional dentro de un flujo ambiental trazable.",
+        "user": "Profesionales que recopilan evidencia y preparan revisiones ambientales.",
+        "workflow": "Registrar información de campo, contrastarla con documentos y revisar una salida antes de incorporarla al trabajo.",
+        "built": "Una definición de candidato a piloto centrada en el workflow y la revisión profesional.",
+        "aiRole": "Recuperar información y preparar borradores vinculados a sus fuentes.",
+        "humanRole": "Revisar fuentes, corregir interpretaciones y asumir la decisión profesional.",
+        "evidence": "La madurez publicada es candidato a piloto; no se presentan datos de cliente ni resultados de campo.",
+        "limits": "No demuestra conformidad regulatoria, precisión técnica ni desempeño operativo.",
+        "nextGate": "Delimitar un entregable, sus fuentes autorizadas y el protocolo de evaluación profesional."
+      }
     }
   ],
   "process": [
     {
-      "label": "Understand",
+      "label": "Comprender",
       "description": "Problema, usuario, workflow y baseline.",
       "output": "Mapa del trabajo real"
     },
     {
-      "label": "Frame",
+      "label": "Delimitar",
       "description": "Datos, fuentes, riesgos y criterio de éxito.",
       "output": "Criterio de éxito acordado"
     },
     {
-      "label": "Prototype",
+      "label": "Prototipar",
       "description": "Hacer visible la hipótesis.",
       "output": "Prototipo navegable"
     },
     {
-      "label": "Prove",
+      "label": "Evaluar",
       "description": "Piloto y evaluación.",
       "output": "Evaluación y gate de decisión"
     },
     {
-      "label": "Build",
+      "label": "Construir",
       "description": "Ingeniería e integración.",
       "output": "Sistema integrado"
     },
     {
-      "label": "Operate",
+      "label": "Operar",
       "description": "Observabilidad, seguridad, costo y evolución.",
       "output": "Operación medible"
     }
@@ -271,7 +303,7 @@
     "title": "¿Tienes un proceso que podría pensar mejor con IA?",
     "body": "Muéstranos dónde se pierde tiempo, contexto o criterio. Podemos empezar haciendo visible una prueba pequeña antes de comprometer una construcción grande.",
     "cta": {
-      "label": "Explorar una oportunidad",
+      "label": "Conoce cómo trabajamos",
       "href": "#/contact"
     }
   }

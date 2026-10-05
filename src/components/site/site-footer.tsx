@@ -8,11 +8,11 @@ export function SiteFooter() {
       <div className="sv-container site-footer__grid">
         <div className="site-footer__lead">
           <BrandMark inverse />
-          <p>Ingeniería de inteligencia artificial aplicada. Prototipos, pilotos y sistemas construidos sobre problemas reales, datos y conocimiento experto.</p>
+          <p>Inteligencia aplicada para decisiones reales. Prototipos y sistemas construidos sobre procesos, datos y conocimiento experto.</p>
         </div>
         <div>
           <p className="sv-eyebrow">Labs</p>
-          {labs.filter((lab) => lab.slug !== "llm-twin").map((lab) => (
+          {labs.map((lab) => (
             <Link key={lab.slug} href={`/labs/${lab.slug}`}>{lab.title}</Link>
           ))}
         </div>
@@ -25,7 +25,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="sv-container site-footer__disclosure">
-        <p>Los demos publicados en SyntaVera Labs son pruebas de capacidad. Cada uno declara su estado real. No representan despliegues con clientes ni productos empaquetados.</p>
+        <p>Las fichas de SyntaVera Labs declaran su evidencia y estado real. No representan despliegues con clientes ni productos empaquetados.</p>
         <p>© {new Date().getFullYear()} SyntaVera · <Link href="/privacy">Privacidad</Link></p>
       </div>
     </footer>

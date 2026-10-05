@@ -15,7 +15,9 @@ No contiene secretos reales. Los valores descritos como `secret manager` deben c
 | `SMTP_USER` | Secret manager, si aplica | Secret manager | Sí | No | Email |
 | `SMTP_PASSWORD` | Secret manager, si aplica | Secret manager | Sí | No | Email |
 | `EMAIL_FROM` | Remitente de staging verificado | Remitente productivo verificado | No | No | Email |
-| `CONTACT_NOTIFICATION_TO` | Vacío mientras Contact esté cerrado | Destino aprobado antes de habilitar Contact | No | No | Contact |
+| `CONTACT_NOTIFICATION_TO` | Buzón de prueba controlado | `contacto@syntavera.dev` | No | No | Contact |
+| `CONTACT_ACCEPT_WITHOUT_NOTIFICATION` | `false` | `false` | No | No | Contact |
+| `CONTACT_DELIVERY_VERIFIED` | `false` hasta prueba controlada | `false` hasta prueba controlada | No | No | Contact |
 | `S3_ENDPOINT` | Endpoint R2 de la cuenta | Endpoint R2 de la cuenta | No | No | Documentos |
 | `S3_REGION` | `auto` | `auto` | No | No | Documentos |
 | `S3_BUCKET` | `syntavera-app-staging-private` | `syntavera-app-production-private` | No | No | Documentos |
@@ -35,3 +37,5 @@ No contiene secretos reales. Los valores descritos como `secret manager` deben c
 | `POSTGRES_PORT` | No aplica; red privada de Coolify | No aplica; red privada de Coolify | No | No | Solo Docker Compose local |
 
 SMTP no es necesario para arrancar staging, pero sin transporte no se puede cerrar la validación de invitación y magic link. En producción, SMTP real y la prueba invitation → magic link → login son gate obligatorio. R2 tampoco es necesario para arrancar la web, pero sus credenciales son necesarias para verificar el flujo de documentos.
+
+El destinatario productivo de Contact está confirmado como `contacto@syntavera.dev`. No es el remitente SMTP ni una credencial. El formulario solo queda disponible con gate público, privacidad aprobada, notificación configurada y `CONTACT_DELIVERY_VERIFIED=true` después de una prueba autorizada de llegada a bandeja. La excepción `CONTACT_ACCEPT_WITHOUT_NOTIFICATION=true` habilita de manera deliberada el contrato de recepción exclusiva en backoffice.

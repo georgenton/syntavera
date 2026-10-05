@@ -2,13 +2,14 @@ import { ArchitectureDiagram } from "@/components/site/architecture-diagram";
 import { BrandPattern } from "@/components/site/brand-pattern";
 import { CapabilityCard } from "@/components/site/capability-card";
 import { CtaBand } from "@/components/site/cta-band";
-import { LabCard } from "@/components/site/lab-card";
 import { ProcessStepper } from "@/components/site/process-stepper";
 import { ButtonLink } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
-import { publishableHomeLabs, websiteContent } from "@/content/site";
+import { websiteContent } from "@/content/site";
+import { getContactChannelStatus } from "@/modules/contact/status.server";
 
 export default function HomePage() {
+  const channel = getContactChannelStatus();
   return (
     <>
       <section className="hero sv-grid-bg">
@@ -18,12 +19,13 @@ export default function HomePage() {
           <h1>{websiteContent.hero.title}</h1>
           <p className="sv-lede">{websiteContent.hero.subtitle}</p>
           <div className="hero__actions">
-            <ButtonLink href="/contact" size="lg">Explorar una oportunidad <span aria-hidden="true">→</span></ButtonLink>
-            <ButtonLink href="/labs" variant="secondary" size="lg">Ver SyntaVera Labs</ButtonLink>
+            <ButtonLink href={channel.available ? "/contact" : "/how-we-work"} size="lg">{channel.available ? "Hablemos de tu proceso" : "Conoce cómo trabajamos"} <span aria-hidden="true">→</span></ButtonLink>
+            <ButtonLink href="/how-we-work#capabilities" variant="secondary" size="lg">Explorar capacidades</ButtonLink>
           </div>
           <ul className="hero__proof" aria-label="Capacidades">
             {websiteContent.hero.microproof.map((item) => <li key={item}>{item}</li>)}
           </ul>
+          <p className="hero__tagline">Inteligencia aplicada para decisiones reales</p>
         </div>
       </section>
 
@@ -46,20 +48,18 @@ export default function HomePage() {
 
       <section className="section">
         <div className="sv-container">
-          <div className="section-heading-row">
-            <SectionHeader index="03" eyebrow="SyntaVera Labs" title="No te pedimos que imagines lo que podemos construir. Mira cómo pensamos." />
-            <ButtonLink href="/labs" variant="secondary">Ver todos los demos <span aria-hidden="true">→</span></ButtonLink>
+          <SectionHeader index="03" eyebrow="SyntaVera Labs" title="Casos delimitados por la evidencia disponible." lede="Las fichas públicas explican el problema, el rol de la IA, la revisión humana y los límites. No destacamos una demo en la home hasta tener material verificable y accesible." />
+          <div className="case-contrast" style={{ marginTop: "var(--space-10)" }}>
+            <article><h3>Qué puedes revisar hoy</h3><p>El alcance de cada caso, su estado real, qué intenta resolver y cuál sería el siguiente gate de evaluación.</p></article>
+            <article><h3>Qué no afirmamos</h3><p>No publicamos resultados, precisión, despliegues ni evidencia de clientes que no existan o no esté autorizada.</p></article>
           </div>
-          <div className="lab-grid">
-            {publishableHomeLabs.map((lab) => <LabCard key={lab.slug} lab={lab} />)}
-          </div>
-          <p className="sv-eyebrow" style={{ marginTop: "var(--space-7)" }}>Los demos son pruebas de capacidad. Ninguno se presenta como producto empaquetado ni como despliegue con clientes.</p>
+          <ButtonLink href="/labs" variant="secondary">Revisar las fichas de Labs <span aria-hidden="true">→</span></ButtonLink>
         </div>
       </section>
 
       <section className="section section--sunken">
         <div className="sv-container">
-          <SectionHeader index="04" eyebrow="Cómo trabajamos" title="Una secuencia de decisiones, no paquetes." lede="Cada etapa produce algo revisable y un punto de decisión explícito antes de invertir más." />
+          <SectionHeader index="04" eyebrow="Cómo trabajamos" title="Así empieza y evoluciona un proyecto" lede="Cada etapa produce algo revisable y un punto de decisión explícito antes de invertir más." />
           <div style={{ marginTop: "var(--space-11)" }}><ProcessStepper /></div>
         </div>
       </section>
@@ -67,7 +67,7 @@ export default function HomePage() {
       <section className="section" id="capabilities">
         <span id="capacidades" aria-hidden="true" />
         <div className="sv-container">
-          <SectionHeader index="05" eyebrow="Capacidades" title="Capacidades combinables." lede="Se combinan según el problema. No son un menú de servicios." />
+          <SectionHeader index="05" eyebrow="Capacidades" title="Combinamos estas capacidades según tu proceso" lede="La combinación depende del trabajo, los datos disponibles y la decisión que se quiere mejorar." />
           <div className="capability-grid" style={{ marginTop: "var(--space-11)" }}>
             {websiteContent.capabilities.map((capability) => <CapabilityCard key={capability.index} capability={capability} />)}
           </div>
@@ -76,13 +76,12 @@ export default function HomePage() {
 
       <section className="section section--sunken">
         <div className="sv-container two-column">
-          <SectionHeader index="06" eyebrow="Recorrido independiente" title="Capacidad end-to-end, sin convertirla en un claim de cliente." />
-          <article className="person-proof">
-            <p className="sv-eyebrow">Independent venture by Jorge Quizamanchuro</p>
-            <h3>FeelVerse</h3>
-            <p>FeelVerse demuestra capacidad de llevar una idea compleja desde contenido y producto hasta arquitectura, software, IA, privacidad y experiencia. Es un venture independiente y no pertenece a SyntaVera.</p>
-            <ul className="chip-list"><li>Producto</li><li>Software</li><li>IA</li><li>Privacidad</li></ul>
-          </article>
+          <SectionHeader index="06" eyebrow="Formas de comenzar" title="Un primer alcance que permita decidir con evidencia." />
+          <div className="start-options">
+            <article><span>01</span><h3>Evaluación de oportunidad</h3><p>Delimitamos el proceso, la decisión, los datos y el criterio de éxito.</p></article>
+            <article><span>02</span><h3>Prototipo o piloto</h3><p>Hacemos visible la hipótesis y la evaluamos con un alcance controlado.</p></article>
+            <article><span>03</span><h3>Construcción e integración</h3><p>Integramos y evolucionamos lo que ya demostró aportar al trabajo.</p></article>
+          </div>
         </div>
       </section>
 

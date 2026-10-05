@@ -1,55 +1,77 @@
+import { z } from "zod";
 import rawContent from "./website-content.json";
 
-export type MaturityLevel = "demo" | "codev" | "pilot" | "lab";
+const publicAssetPath = z.string().startsWith("/");
 
-export type Lab = {
-  slug: string;
-  title: string;
-  territory: string;
-  level: MaturityLevel;
-  maturityLabel: string;
-  promise: string;
-  disclosure: string;
-  stack: string[];
-};
+const labMediaSchema = z.object({
+  kind: z.literal("video"),
+  src: publicAssetPath,
+  poster: publicAssetPath,
+  captions: publicAssetPath,
+  transcript: publicAssetPath,
+  provenance: z.string().trim().min(1),
+}).strict();
 
-export type ProcessStep = {
-  label: string;
-  description: string;
-  output: string;
-};
+const labSchema = z.object({
+  slug: z.string().regex(/^[a-z0-9-]+$/),
+  title: z.string().min(1),
+  territory: z.string().min(1),
+  level: z.enum(["demo", "codev", "pilot", "lab"]),
+  maturityLabel: z.string().min(1),
+  promise: z.string().min(1),
+  disclosure: z.string().min(1),
+  stack: z.array(z.string().min(1)).min(1),
+  case: z.object({
+    problem: z.string().min(1),
+    user: z.string().min(1),
+    workflow: z.string().min(1),
+    built: z.string().min(1),
+    aiRole: z.string().min(1),
+    humanRole: z.string().min(1),
+    evidence: z.string().min(1),
+    limits: z.string().min(1),
+    nextGate: z.string().min(1),
+  }).strict(),
+  media: labMediaSchema.optional(),
+}).strict();
 
-export type Capability = {
-  index: string;
-  title: string;
-  description: string;
-  items: string[];
-};
+const websiteContentSchema = z.object({
+  nav: z.array(z.object({ label: z.string(), href: z.string() })),
+  hero: z.object({
+    eyebrow: z.string(),
+    title: z.string(),
+    subtitle: z.string(),
+    microproof: z.array(z.string()),
+  }),
+  problem: z.object({ title: z.string(), body: z.string() }),
+  systemStages: z.array(z.object({
+    label: z.string(),
+    items: z.array(z.string()),
+    note: z.string().optional(),
+  })),
+  labs: z.array(labSchema),
+  process: z.array(z.object({ label: z.string(), description: z.string(), output: z.string() })),
+  capabilities: z.array(z.object({
+    index: z.string(),
+    title: z.string(),
+    description: z.string(),
+    items: z.array(z.string()),
+  })),
+  trust: z.array(z.object({ index: z.string(), title: z.string(), description: z.string() })),
+  finalCta: z.object({
+    title: z.string(),
+    body: z.string(),
+    cta: z.object({ label: z.string(), href: z.string() }),
+  }),
+}).strict();
 
-export type TrustPrinciple = {
-  index: string;
-  title: string;
-  description: string;
-};
+export type MaturityLevel = z.infer<typeof labSchema>["level"];
+export type Lab = z.infer<typeof labSchema>;
+export type ProcessStep = z.infer<typeof websiteContentSchema>["process"][number];
+export type Capability = z.infer<typeof websiteContentSchema>["capabilities"][number];
+export type TrustPrinciple = z.infer<typeof websiteContentSchema>["trust"][number];
 
-type WebsiteContent = {
-  nav: Array<{ label: string; href: string }>;
-  hero: {
-    eyebrow: string;
-    title: string;
-    subtitle: string;
-    microproof: string[];
-  };
-  problem: { title: string; body: string };
-  systemStages: Array<{ label: string; note: string }>;
-  labs: Lab[];
-  process: ProcessStep[];
-  capabilities: Capability[];
-  trust: TrustPrinciple[];
-  finalCta: { title: string; body: string };
-};
-
-export const websiteContent = rawContent as WebsiteContent;
+export const websiteContent = websiteContentSchema.parse(rawContent);
 
 const hrefMap: Record<string, string> = {
   "#/": "/",
@@ -69,8 +91,6 @@ export function getLab(slug: string) {
   return labs.find((lab) => lab.slug === slug);
 }
 
-export const publishableHomeLabs = labs.filter((lab) => lab.slug !== "llm-twin");
-
 export const demoLayers = [
   {
     title: "Lo que ve la persona",
@@ -87,19 +107,4 @@ export const demoLayers = [
     description: "La persona decide: valida las fuentes, corrige el criterio y deja un registro.",
     items: ["Evidencia", "Criterio", "Trazabilidad"],
   },
-] as const;
-
-export const caseLedger = [
-  ["Problema explorado", "Definido para el territorio del demo; no representa un encargo de cliente."],
-  ["Usuario / rol", "Por completar con evidencia verificable antes de una publicación indexable."],
-  ["Workflow actual", "Representación de capacidad, no observación de una operación de cliente."],
-  ["Qué construimos", "Una experiencia demostrable que conecta señales, contexto, decisión y verificación."],
-  ["Arquitectura publicable", "Capas de interfaz, orquestación y evidencia sin detalles internos ni credenciales."],
-  ["Papel de la IA", "Preparar propuestas y contexto; no sustituir la decisión responsable."],
-  ["Papel humano", "Revisar fuentes, aplicar criterio y aceptar o corregir el resultado."],
-  ["Qué demuestra", "Que el flujo completo puede recorrerse y auditarse en una prueba de capacidad."],
-  ["Qué no demuestra", "No demuestra precisión en producción, resultados de negocio ni desempeño con datos de cliente."],
-  ["Estado real", "El indicado por la etiqueta de madurez del caso."],
-  ["Riesgos y límites", "Dependen de datos, operación, evaluación y gobernanza todavía no validados en cliente."],
-  ["Próximo gate", "Acordar una prueba pequeña, criterios de evaluación y límites antes de avanzar."],
 ] as const;

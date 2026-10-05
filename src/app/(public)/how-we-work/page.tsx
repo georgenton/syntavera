@@ -15,14 +15,14 @@ export const metadata: Metadata = {
 export default function HowWeWorkPage() {
   return (
     <>
-      <PageIntro eyebrow="Cómo trabajamos" title="Empezamos por el problema y construimos evidencia antes de escalar." lede="Seis decisiones. Cada una produce algo revisable y un punto donde detenerse, corregir o continuar." />
+      <PageIntro eyebrow="Cómo trabajamos" title="Así empieza y evoluciona un proyecto" lede="Seis decisiones. Cada una produce algo revisable y un punto donde detenerse, corregir o continuar." />
       <section className="section">
         <div className="sv-container"><ProcessStepper showDetail /></div>
       </section>
       <section className="section section--sunken" id="capabilities">
         <span id="capacidades" aria-hidden="true" />
         <div className="sv-container">
-          <SectionHeader index="02" eyebrow="Capacidades" title="Qué se combina en cada etapa." />
+          <SectionHeader index="02" eyebrow="Capacidades" title="Combinamos estas capacidades según tu proceso" />
           <div className="capability-grid" style={{ marginTop: "var(--space-11)" }}>
             {websiteContent.capabilities.map((item) => <CapabilityCard key={item.index} capability={item} />)}
           </div>
