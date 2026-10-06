@@ -10,7 +10,7 @@ import { labs } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "SyntaVera Labs",
-  description: "Demos de capacidad etiquetados con su madurez y sus límites reales.",
+  description: "Fichas de capacidad con madurez, evidencia disponible y límites explícitos.",
   alternates: { canonical: "/labs" },
 };
 
@@ -21,11 +21,10 @@ export default async function LabsPage({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      <PageIntro dark eyebrow="SyntaVera Labs" title="Demos etiquetados con su madurez real." lede="Cada pieza de Labs es una prueba de capacidad: dice qué demuestra, qué no demuestra y en qué estado está. Ninguna se ofrece como producto empaquetado.">
-        <MaturityBadge level="demo" onDark>Capability Demo</MaturityBadge>
-        <MaturityBadge level="codev" onDark>Co-development</MaturityBadge>
-        <MaturityBadge level="pilot" onDark>Pilot candidate</MaturityBadge>
-        <MaturityBadge level="lab" onDark>In the Lab · Planned</MaturityBadge>
+      <PageIntro dark eyebrow="SyntaVera Labs" title="Casos con madurez y límites explícitos." lede="Cada ficha separa el problema, lo construido, el papel de la IA, la revisión humana y la evidencia que todavía falta.">
+        <MaturityBadge level="demo" onDark>Ficha de capacidad</MaturityBadge>
+        <MaturityBadge level="codev" onDark>Co-desarrollo</MaturityBadge>
+        <MaturityBadge level="pilot" onDark>Candidato a piloto</MaturityBadge>
       </PageIntro>
       <section className="section">
         <div className="sv-container">
@@ -41,13 +40,13 @@ export default async function LabsPage({ searchParams }: { searchParams: Promise
           </div>
           <aside className="notice" style={{ marginTop: "var(--space-10)" }}>
             <h2>Cómo leer estas etiquetas</h2>
-            <p>La etiqueta es parte de la evidencia. “Capability Demo” significa que el sistema existe y se puede recorrer, no que esté operando en una empresa. “Co-development” significa que se construye junto a un especialista del dominio. “Planned” significa que aún no hay nada que mostrar.</p>
+            <p>La etiqueta es parte de la evidencia. Una ficha de capacidad documenta el alcance sin afirmar una demostración interactiva. Co-desarrollo describe trabajo con criterio de dominio. Candidato a piloto indica el siguiente paso posible, no un despliegue realizado.</p>
           </aside>
         </div>
       </section>
       <section className="section section--dark sv-dark">
         <div className="sv-container">
-          <SectionHeader index="02" eyebrow="Cómo mostramos un demo" title="Tres capas del mismo caso." lede="Separamos qué ve la persona, qué hace el modelo y dónde se verifica la decisión." onDark />
+          <SectionHeader index="02" eyebrow="Cómo explicamos un caso" title="Tres capas de la misma decisión." lede="Separamos qué ve la persona, qué hace el modelo y dónde se verifica la decisión." onDark />
           <div style={{ marginTop: "var(--space-11)" }}><DemoLayers /></div>
         </div>
       </section>

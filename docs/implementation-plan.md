@@ -14,7 +14,7 @@ Decisiones de cautela:
 - `Insights` y el perfil de experto placeholder se ocultan en V1.
 - `/capabilities` redirige permanentemente a `/how-we-work#capabilities`; el destino conserva un alias `#capacidades` accesible.
 - Los casos placeholder pueden existir para revisión, pero usan `noindex` y no aparecen en el sitemap.
-- Los demos son experiencias honestas y deterministas; “LLM Twin” se presenta únicamente como planeado.
+- Las fichas de Labs declaran evidencia y límites; “LLM Twin” no se publica hasta contar con material real.
 - La aceptación en portal queda registrada contra una versión exacta y no se presenta como firma legal.
 - FeelVerse se identifica como iniciativa independiente de Jorge, no como producto o cliente de SyntaVera.
 
@@ -52,7 +52,7 @@ Las versiones restantes se fijan en `package.json` y `pnpm-lock.yaml`, y se vali
 | Experto placeholder oculto | Solicitud + handoff | No render público | contenido filtrado | canon de marca/copy | Verificado |
 | Cases incompletos | Solicitud §SEO | `noindex`, fuera de sitemap | metadata dinámica + catálogo | E2E metadata/sitemap | Verificado |
 | Labs honestos | Solicitud §Labs | Demos deterministas con disclosure | rutas `/labs/*` | unit + E2E | Verificado |
-| LLM Twin planeado | Solicitud §Labs | Nunca simular ejecución real | estado `planned` | test de copy/estado | Verificado |
+| LLM Twin sin evidencia pública | Solicitud §Labs | Nunca simular ejecución real | fuera de la superficie pública | test de copy/estado | Verificado |
 | Contacto persistente | Solicitud §contacto | Server Action + Zod + honeypot + límite IP | `ContactSubmission` + módulo contact | schemas + E2E de gate | Implementado; gate legal |
 | Texto exacto de éxito | Solicitud §contacto | Conservar literal español | estado del formulario | test exacto | Verificado |
 | Privacidad versionada | Solicitud §legal | Mecanismo listo; publicación pendiente | `legal-content.ts` + gate | test de estado | Bloqueo: texto aprobado |

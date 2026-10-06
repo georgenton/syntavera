@@ -39,6 +39,6 @@ pnpm build
 pnpm test:e2e
 ```
 
-El formulario público permanece cerrado mientras `PUBLIC_CONTACT_ENABLED` no sea `true` y la versión de `PRIVACY_POLICY_VERSION` no coincida con un documento legal aprobado en código.
+El formulario público permanece cerrado mientras falte cualquiera de sus gates: `PUBLIC_CONTACT_ENABLED=true`, versión legal aprobada coincidente, recepción/notificación configurada y entrega verificada. Consulta la [lista de activación](./docs/contact-activation.md).
 
-Consulta [arquitectura](./docs/architecture.md), [modelo de datos](./docs/data-model.md), [auth y permisos](./docs/auth-and-permissions.md), [handoff visual](./docs/design-handoff.md), [storage y correo](./docs/storage-email.md), [backup/restore](./docs/backup-restore.md), [deployment](./docs/deployment.md), [evidencia de verificación](./docs/verification.md) y [runbook](./docs/runbook.md).
+Consulta [arquitectura](./docs/architecture.md), [modelo de datos](./docs/data-model.md), [auth y permisos](./docs/auth-and-permissions.md), [handoff visual](./docs/design-handoff.md), [storage y correo](./docs/storage-email.md), [activación de Contact](./docs/contact-activation.md), [candidato de publicación](./docs/publication-candidate.md), [asistente futuro](./docs/future-assistant.md), [backup/restore](./docs/backup-restore.md), [deployment](./docs/deployment.md), [evidencia base](./docs/verification.md), [verificación de la afinación pública](./docs/website-affination-verification.md) y [runbook](./docs/runbook.md).

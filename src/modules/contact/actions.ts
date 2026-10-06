@@ -5,10 +5,12 @@ import { headers } from "next/headers";
 import { after } from "next/server";
 import { getServerEnv } from "@/lib/env";
 import { prisma } from "@/lib/db";
-import { isPrivacyPolicyReady } from "@/content/legal/privacy";
-import { notifyContactSubmission } from "@/modules/email/service";
+import { processContactNotification } from "./notification.server";
+import { persistContactSubmission } from "./persistence-core";
 import { consumeContactRateLimit } from "./rate-limit";
 import { contactSchema } from "./schema";
+import { CONTACT_UNAVAILABLE_MESSAGE } from "./status";
+import { getContactChannelStatus } from "./status.server";
 
 export type ContactFormState = {
   status: "idle" | "success" | "error";
@@ -29,6 +31,13 @@ function protectedHash(value: string, secret: string) {
 
 export async function submitContact(_: ContactFormState, formData: FormData): Promise<ContactFormState> {
   const env = getServerEnv();
+  const channel = getContactChannelStatus();
+  if (!channel.available) return { status: "error", message: CONTACT_UNAVAILABLE_MESSAGE };
+
+  if (formData.get("website")) {
+    return { status: "success", message: "Gracias. Recibimos tu contexto. Lo revisaremos antes de responder." };
+  }
+
   const parsed = contactSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { status: "error", message: "Revisa los campos indicados.", errors: parsed.error.flatten().fieldErrors };
 
@@ -37,12 +46,6 @@ export async function submitContact(_: ContactFormState, formData: FormData): Pr
     name: parsed.data.name,
     message: `Gracias, ${parsed.data.name}. Recibimos tu contexto. Lo revisaremos antes de responder.`,
   };
-  if (parsed.data.website) return success;
-
-  if (!env.PUBLIC_CONTACT_ENABLED || !isPrivacyPolicyReady(env.PRIVACY_POLICY_VERSION)) {
-    return { status: "error", message: "El formulario estará disponible cuando el aviso de privacidad aprobado quede publicado." };
-  }
-
   const requestHeaders = await headers();
   const ipHash = protectedHash(clientIp(requestHeaders), env.BETTER_AUTH_SECRET);
   const rate = await consumeContactRateLimit({
@@ -53,28 +56,35 @@ export async function submitContact(_: ContactFormState, formData: FormData): Pr
   });
   if (!rate.allowed) return { status: "error", message: "Recibimos demasiados intentos. Inténtalo de nuevo más tarde." };
 
-  await prisma.contactSubmission.create({
-    data: {
-      name: parsed.data.name,
-      organization: parsed.data.organization,
-      email: parsed.data.email,
-      role: parsed.data.role,
-      context: `${parsed.data.process}\n\nSituación actual:\n${parsed.data.currentState}`,
-      area: parsed.data.area || null,
-      privacyVersion: env.PRIVACY_POLICY_VERSION!,
-      privacyAcceptedAt: new Date(),
-      ipHash,
-      userAgent: requestHeaders.get("user-agent")?.slice(0, 500) ?? null,
-    },
-  });
+  let persisted;
+  try {
+    persisted = await persistContactSubmission(
+      () => prisma.contactSubmission.create({
+        data: {
+          requestKey: parsed.data.submissionKey,
+          name: parsed.data.name,
+          organization: parsed.data.organization ?? null,
+          email: parsed.data.email,
+          role: parsed.data.role ?? null,
+          context: parsed.data.description,
+          area: parsed.data.area || null,
+          privacyVersion: env.PRIVACY_POLICY_VERSION!,
+          privacyAcceptedAt: new Date(),
+          notificationStatus: channel.notificationConfigured ? "PENDING" : "NOT_REQUIRED",
+          ipHash,
+          userAgent: requestHeaders.get("user-agent")?.slice(0, 500) ?? null,
+        },
+        select: { id: true },
+      }),
+      () => prisma.contactSubmission.findUnique({ where: { requestKey: parsed.data.submissionKey }, select: { id: true } }),
+    );
+  } catch {
+    return { status: "error", message: "No pudimos guardar tu solicitud. No se envió nada. Inténtalo de nuevo." };
+  }
 
-  after(async () => {
-    await notifyContactSubmission({
-      name: parsed.data.name,
-      email: parsed.data.email,
-      organization: parsed.data.organization,
-    }).catch(() => undefined);
-  });
+  if (persisted.outcome === "created" && channel.notificationConfigured) {
+    after(() => processContactNotification(persisted.id));
+  }
 
   return success;
 }

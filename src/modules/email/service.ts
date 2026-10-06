@@ -59,14 +59,14 @@ export async function sendInvitationEmail(input: { email: string; inviteUrl: str
   });
 }
 
-export async function notifyContactSubmission(input: { name: string; email: string; organization: string }) {
+export async function notifyContactSubmission(input: { name: string; email: string; organization: string | null }) {
   const env = getServerEnv();
-  if (!env.CONTACT_NOTIFICATION_TO) return;
+  if (!env.CONTACT_NOTIFICATION_TO) throw Object.assign(new Error("Contact notification recipient is not configured"), { code: "RECIPIENT_NOT_CONFIGURED" });
   const mailer = getMailer();
   await mailer.send({
     to: env.CONTACT_NOTIFICATION_TO,
     replyTo: input.email,
-    subject: `Nuevo contexto recibido · ${input.organization}`,
+    subject: input.organization ? `Nuevo contexto recibido · ${input.organization}` : "Nuevo contexto recibido",
     text: `Nuevo contexto guardado. Revíselo en el backoffice. Contacto: ${input.name} <${input.email}>.`,
   });
 }

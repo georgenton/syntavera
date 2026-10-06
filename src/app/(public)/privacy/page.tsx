@@ -4,13 +4,14 @@ import { privacyPolicy } from "@/content/legal/privacy";
 
 export const metadata: Metadata = {
   title: "Privacidad",
+  alternates: { canonical: "/privacy" },
   robots: { index: false, follow: true },
 };
 
 export default function PrivacyPage() {
   return (
     <>
-      <PageIntro eyebrow="Privacidad" title="Contenido legal pendiente de aprobación." lede="La ruta, el versionado y el gate de publicación están preparados. No publicamos un texto legal inventado." />
+      <PageIntro eyebrow="Privacidad" title="Privacidad y uso de datos." lede="El canal de contacto permanece cerrado hasta contar con un aviso aprobado, versionado y publicado." />
       <section className="section">
         <div className="sv-container sv-prose">
           {privacyPolicy.approved ? privacyPolicy.sections.map((section) => (

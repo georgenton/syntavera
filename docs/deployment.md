@@ -16,6 +16,6 @@ Variables mínimas de arranque: `APP_URL`, `BETTER_AUTH_URL`, `BETTER_AUTH_SECRE
 
 ## Gate productivo
 
-No habilitar `PUBLIC_CONTACT_ENABLED=true` hasta instalar el texto legal aprobado y fijar la misma versión en `PRIVACY_POLICY_VERSION`. Verificar correo, R2, healthcheck, backup y smoke E2E antes de cambiar tráfico.
+No habilitar `PUBLIC_CONTACT_ENABLED=true` hasta completar la [lista de activación de Contact](contact-activation.md): instalar el texto legal aprobado, fijar la misma versión en `PRIVACY_POLICY_VERSION`, verificar persistencia, correo y reintento sin duplicados, y registrar `CONTACT_DELIVERY_VERIFIED=true` solo después de confirmar llegada a bandeja. Verificar además R2, healthcheck, backup y smoke E2E antes de cambiar tráfico. Los dos hitos y el rollback están definidos en [el candidato de publicación](publication-candidate.md).
 
 Promover a producción exactamente el digest validado en staging. No reconstruir desde una rama flotante entre ambos entornos.

@@ -14,8 +14,10 @@ const serverEnvSchema = z.object({
   SMTP_SECURE: booleanFromString.default(false),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
-  EMAIL_FROM: z.string().default("SyntaVera <no-reply@syntavera.dev>"),
+  EMAIL_FROM: z.string().min(1).default("SyntaVera <no-reply@syntavera.dev>"),
   CONTACT_NOTIFICATION_TO: z.email().optional(),
+  CONTACT_ACCEPT_WITHOUT_NOTIFICATION: booleanFromString.default(false),
+  CONTACT_DELIVERY_VERIFIED: booleanFromString.default(false),
   PUBLIC_CONTACT_ENABLED: booleanFromString.default(false),
   PRIVACY_POLICY_VERSION: z.string().optional(),
   CONTACT_RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(3600),
@@ -28,6 +30,10 @@ const serverEnvSchema = z.object({
   S3_FORCE_PATH_STYLE: booleanFromString.default(false),
   SIGNED_URL_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(300),
   MAX_UPLOAD_BYTES: z.coerce.number().int().positive().default(26_214_400),
+}).superRefine((env, context) => {
+  if (Boolean(env.SMTP_USER) !== Boolean(env.SMTP_PASSWORD)) {
+    context.addIssue({ code: "custom", message: "SMTP_USER and SMTP_PASSWORD must be configured together", path: ["SMTP_USER"] });
+  }
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
