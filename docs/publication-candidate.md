@@ -19,12 +19,16 @@ La migración `20261005090000_contact_delivery_state` sí es necesaria en este h
 
 ### Orden
 
-1. Desplegar el digest candidato en staging con Contact cerrado.
-2. Ejecutar una sola tarea `migrator` contra la base exclusiva de staging.
-3. Confirmar `prisma migrate status`, recuentos históricos y `/api/health` antes de iniciar `runner`.
-4. Arrancar `runner`, ejecutar smoke de `/`, `/labs`, `/about`, `/contact`, `/admin` y portal, y revisar logs/headers.
-5. Validar los snapshots y permisos con el SHA desplegado.
-6. Con autorización posterior, repetir en producción: backup, `migrator`, comprobación, `runner`, smoke. No habilitar Contact.
+1. Identificar el commit candidato y construir desde ese mismo commit las imágenes `migrator` y `runner`; registrar por separado el digest inmutable de cada imagen.
+2. Confirmar que `DATABASE_URL` apunta a la base exclusiva de staging y que existe un backup inmediatamente anterior, recuperable y ensayado en aislamiento. Mantener Contact cerrado.
+3. Ejecutar una sola tarea con el digest `migrator` candidato contra esa base exclusiva.
+4. Confirmar `prisma migrate status`, checksums, recuentos históricos e integridad de los datos antes de iniciar la aplicación candidata.
+5. Arrancar en staging el digest `runner` construido desde el mismo commit candidato.
+6. Consultar `/api/health` en ese `runner`, ejecutar el smoke de `/`, `/labs`, `/about`, `/contact`, `/admin` y portal, y revisar logs y cabeceras.
+7. Validar snapshots y permisos contra el SHA y los digests efectivamente desplegados.
+8. Con autorización posterior, repetir en producción: backup, `migrator`, comprobación, `runner`, healthcheck y smoke. No habilitar Contact.
+
+El healthcheck del runner anterior no valida el candidato. La consulta HTTP de `/api/health` y el smoke solo se realizan después de arrancar el nuevo `runner`; las comprobaciones previas al arranque corresponden exclusivamente a migración e integridad de datos.
 
 ### Criterios de detención
 
