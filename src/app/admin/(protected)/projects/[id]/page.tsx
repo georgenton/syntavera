@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { requireInternalProjectAccess } from "@/modules/auth/guards";
 import { createInvoiceAction } from "@/modules/projects/billing-actions";
-import { addDeliverableAction, addMilestoneAction, addPhaseAction, createDocumentAction, inviteClientAction, publishProjectAction, updateDocumentStateAction, updateProjectAction } from "@/modules/projects/admin-actions";
+import { addDeliverableAction, addMilestoneAction, addPhaseAction, createDocumentAction, inviteClientAction, publishProjectAction, retryClientInvitationAction, updateDocumentStateAction, updateProjectAction } from "@/modules/projects/admin-actions";
 
-export default async function AdminProjectPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminProjectPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ invite?: string }> }) {
   const { id } = await params;
+  const { invite } = await searchParams;
   await requireInternalProjectAccess(id);
   const [project, managers] = await Promise.all([
     prisma.project.findUnique({
@@ -20,7 +21,9 @@ export default async function AdminProjectPage({ params }: { params: Promise<{ i
       phases: { orderBy: { position: "asc" } },
       milestones: { orderBy: { position: "asc" } },
       deliverables: { orderBy: { createdAt: "asc" }, include: { documents: { orderBy: { createdAt: "asc" }, include: { versions: { orderBy: { version: "desc" }, include: { file: true } } } } } },
-      memberships: { include: { user: { select: { name: true, email: true } } } },
+      memberships: { include: { user: { select: { id: true, name: true, email: true } } } },
+      invitations: { orderBy: { createdAt: "desc" } },
+      audits: { where: { action: "CLIENT_INVITATION_SEND_FAILED" }, select: { targetId: true } },
       publications: { orderBy: { version: "desc" }, take: 10 },
       invoices: { orderBy: { createdAt: "desc" } },
       },
@@ -32,6 +35,8 @@ export default async function AdminProjectPage({ params }: { params: Promise<{ i
   return (
     <div className="workspace-page">
       <header className="workspace-heading"><div><p className="sv-eyebrow">{project.organization.name}</p><h1>{project.name}</h1></div><div className="heading-status"><StatusBadge value={project.status} /><span>Última publicación: v{project.publications.find((item) => item.status === "PUBLISHED")?.version ?? "—"}</span></div></header>
+
+      {invite ? <div className={`notice ${invite === "sent" ? "notice--success" : "notice--warning"}`} role={invite === "sent" ? "status" : "alert"}>{invite === "sent" ? "Invitación enviada y registrada." : invite === "failed" ? "El correo no pudo entregarse. El token fue revocado y el acceso sigue pendiente; puedes reintentar." : "El correo de invitación no está configurado. No se creó ningún acceso ni token."}</div> : null}
 
       <section className="workspace-panel"><div className="panel-heading"><h2>Resumen interno</h2><p>Guardar no publica.</p></div><form action={updateProjectAction.bind(null, id)} className="workspace-form"><div className="form-grid"><div className="field"><label htmlFor="name">Nombre</label><input id="name" name="name" defaultValue={project.name} required /></div><div className="field"><label htmlFor="status">Estado</label><select id="status" name="status" defaultValue={project.status}>{["DISCOVERY", "ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"].map((status) => <option key={status} value={status}>{status}</option>)}</select></div><div className="field"><label htmlFor="reference">Referencia</label><input id="reference" name="reference" defaultValue={project.reference ?? ""} maxLength={120} /></div><div className="field"><label htmlFor="projectManagerId">Responsable SyntaVera</label><select id="projectManagerId" name="projectManagerId" defaultValue={project.internal?.projectManagerId ?? ""} required>{managers.map((manager) => <option key={manager.id} value={manager.id}>{manager.name} · {manager.email}</option>)}</select></div><div className="field field--full"><label htmlFor="primaryContactId">Contacto principal</label><select id="primaryContactId" name="primaryContactId" defaultValue={project.primaryContactId ?? ""}><option value="">Sin contacto principal</option>{project.organization.contacts.map((contact) => <option key={contact.id} value={contact.id}>{contact.name} · {contact.email}</option>)}</select></div><div className="field field--full"><label htmlFor="objective">Objetivo</label><textarea id="objective" name="objective" defaultValue={project.objective} minLength={20} required /></div><div className="field field--full"><label htmlFor="summary">Resumen publicable</label><textarea id="summary" name="summary" defaultValue={project.summary} minLength={20} required /></div></div><Button type="submit">Guardar borrador</Button></form></section>
 
@@ -45,9 +50,14 @@ export default async function AdminProjectPage({ params }: { params: Promise<{ i
 
       <section className="workspace-grid-2"><form action={createDocumentAction.bind(null, id)} className="workspace-panel workspace-form"><div className="panel-heading"><h2>Nuevo documento</h2><p>Nace como borrador y no entra al snapshot.</p></div><div className="field"><label htmlFor="document-title">Título</label><input id="document-title" name="title" required /></div><div className="field"><label htmlFor="document-deliverable">Entregable</label><select id="document-deliverable" name="deliverableId" required><option value="">Selecciona</option>{project.deliverables.map((deliverable) => <option value={deliverable.id} key={deliverable.id}>{deliverable.title}</option>)}</select></div><Button type="submit" variant="secondary">Crear documento</Button></form><div className="workspace-panel"><div className="panel-heading"><h2>Documentos y versiones</h2><p>R2 se confirma antes de persistir metadata.</p></div><div className="document-admin-list">{project.deliverables.flatMap((deliverable) => deliverable.documents.map((document) => <article className="document-admin-card" key={document.id}><div><strong>{document.title}</strong><p>{deliverable.title} · {document.versions.length} versiones</p><StatusBadge value={document.state} /></div><form action={updateDocumentStateAction.bind(null, id, document.id)}><label htmlFor={`document-state-${document.id}`}>Estado</label><select id={`document-state-${document.id}`} name="state" defaultValue={document.state}><option value="DRAFT">Borrador</option><option value="PUBLISHED">Publicado</option><option value="ARCHIVED">Archivado</option></select><button type="submit">Guardar</button></form><DocumentUploadForm projectId={id} documentId={document.id} /></article>))}{project.deliverables.every((deliverable) => !deliverable.documents.length) ? <p className="empty-state">No hay documentos.</p> : null}</div></div></section>
 
-      <section className="workspace-grid-2">
+      <section className="workspace-grid-2" id="client-access">
         <form action={inviteClientAction.bind(null, id)} className="workspace-panel workspace-form"><div className="panel-heading"><h2>Invitar cliente</h2><p>La invitación y el acceso son de un solo uso.</p></div><div className="field"><label htmlFor="client-name">Nombre</label><input id="client-name" name="name" required /></div><div className="field"><label htmlFor="client-email">Email</label><input id="client-email" name="email" type="email" required /></div><fieldset className="permission-field"><legend>Permisos</legend>{["VIEW", "COMMENT", "APPROVE", "FINANCE"].map((permission) => <label key={permission}><input type="checkbox" name="permissions" value={permission} defaultChecked={permission === "VIEW"} /> {permission}</label>)}</fieldset><Button type="submit">Enviar invitación</Button></form>
-        <div className="workspace-panel"><div className="panel-heading"><h2>Accesos</h2><p>Siempre acotados por proyecto.</p></div><div className="data-list">{project.memberships.length ? project.memberships.map((membership) => <article key={membership.id}><div><strong>{membership.user.name}</strong><p>{membership.user.email}</p></div><div><StatusBadge value={membership.status} /><span>{membership.permissions.join(" · ")}</span></div></article>) : <p className="empty-state">No hay personas cliente invitadas.</p>}</div></div>
+        <div className="workspace-panel"><div className="panel-heading"><h2>Accesos</h2><p>Estado real de cada acceso e invitación.</p></div><div className="data-list">{project.memberships.length ? project.memberships.map((membership) => {
+          const invitation = project.invitations.find((item) => item.email === membership.user.email);
+          const failed = Boolean(invitation && project.audits.some((audit) => audit.targetId === invitation.id));
+          const state = membership.status === "ACTIVE" ? "Activo" : membership.status === "REVOKED" ? "Revocado" : failed ? "Envío fallido" : invitation?.revokedAt ? "Revocado" : invitation && invitation.expiresAt <= new Date() ? "Expirado" : invitation ? "Invitación enviada" : "Pendiente sin envío";
+          return <article key={membership.id}><div><strong>{membership.user.name}</strong><p>{membership.user.email}</p><span>{state}</span></div><div><StatusBadge value={membership.status} /><span>{membership.permissions.join(" · ")}</span>{membership.status === "INVITED" ? <form action={retryClientInvitationAction.bind(null, id, membership.user.id)}><Button type="submit" variant="secondary" size="sm">Reintentar invitación</Button></form> : null}</div></article>;
+        }) : <p className="empty-state">No hay personas cliente invitadas.</p>}</div></div>
       </section>
 
       <section className="workspace-grid-2">

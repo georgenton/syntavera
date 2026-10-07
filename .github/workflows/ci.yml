@@ -36,6 +36,18 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: syntavera_e2e
+          POSTGRES_PASSWORD: syntavera_e2e
+          POSTGRES_DB: syntavera_e2e
+        options: >-
+          --health-cmd "pg_isready -U syntavera_e2e -d syntavera_e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -51,7 +63,19 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm prisma:generate
         env:
-          DATABASE_URL: postgresql://build:build@127.0.0.1:5432/build
+          DATABASE_URL: postgresql://syntavera_e2e:syntavera_e2e@postgres:5432/syntavera_e2e
+      - name: Apply reviewed migrations to disposable PostgreSQL
+        run: pnpm prisma:migrate:deploy
+        env:
+          DATABASE_URL: postgresql://syntavera_e2e:syntavera_e2e@postgres:5432/syntavera_e2e
+      - name: Seed synthetic authenticated fixtures
+        run: pnpm exec tsx tests/e2e/seed-authenticated.ts
+        env:
+          DATABASE_URL: postgresql://syntavera_e2e:syntavera_e2e@postgres:5432/syntavera_e2e
+          E2E_ADMIN_EMAIL: admin.e2e@syntavera.invalid
+          E2E_ADMIN_PASSWORD: synthetic-admin-password-2026
+          E2E_RESTRICTED_EMAIL: restricted.e2e@syntavera.invalid
+          E2E_RESTRICTED_PASSWORD: synthetic-restricted-password-2026
       - name: Verify pinned Playwright runtime
         run: |
           test "$(uname -m)" = "x86_64"
@@ -62,12 +86,33 @@ jobs:
           test -x "$browser_path"
           "$browser_path" --version
       - name: Run public end-to-end tests
-        run: pnpm test:e2e --project=desktop-1440 --grep-invert @authenticated
+        run: pnpm test:e2e --project=desktop-1440 --grep-invert "@authenticated|@portal"
         env:
           BETTER_AUTH_SECRET: ci-secret-that-is-longer-than-thirty-two-characters
-          DATABASE_URL: postgresql://build:build@127.0.0.1:5432/build
+          DATABASE_URL: postgresql://syntavera_e2e:syntavera_e2e@postgres:5432/syntavera_e2e
           PUBLIC_CONTACT_ENABLED: "false"
           CONTACT_DELIVERY_VERIFIED: "false"
+      - name: Run authenticated backoffice and portal flows
+        run: pnpm test:e2e --project=desktop-1440 --grep "@authenticated|@portal" --grep-invert @portal-responsive
+        env:
+          BETTER_AUTH_SECRET: ci-secret-that-is-longer-than-thirty-two-characters
+          DATABASE_URL: postgresql://syntavera_e2e:syntavera_e2e@postgres:5432/syntavera_e2e
+          PUBLIC_CONTACT_ENABLED: "false"
+          CONTACT_DELIVERY_VERIFIED: "false"
+          CONTACT_NOTIFICATION_TO: contact.e2e@syntavera.invalid
+          E2E_MAILBOX_PATH: /tmp/syntavera-e2e-mailbox.jsonl
+          E2E_ADMIN_EMAIL: admin.e2e@syntavera.invalid
+          E2E_ADMIN_PASSWORD: synthetic-admin-password-2026
+          E2E_RESTRICTED_EMAIL: restricted.e2e@syntavera.invalid
+          E2E_RESTRICTED_PASSWORD: synthetic-restricted-password-2026
+      - name: Run responsive authenticated portal checks
+        run: pnpm test:e2e --grep @portal-responsive --workers=1
+        env:
+          BETTER_AUTH_SECRET: ci-secret-that-is-longer-than-thirty-two-characters
+          DATABASE_URL: postgresql://syntavera_e2e:syntavera_e2e@postgres:5432/syntavera_e2e
+          PUBLIC_CONTACT_ENABLED: "false"
+          CONTACT_DELIVERY_VERIFIED: "false"
+          E2E_MAILBOX_PATH: /tmp/syntavera-e2e-mailbox.jsonl
       - name: Upload Playwright failure diagnostics
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4

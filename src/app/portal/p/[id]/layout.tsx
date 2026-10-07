@@ -8,5 +8,5 @@ export default async function PortalProjectLayout({ children, params }: Readonly
   const context = await requireProjectAccess(id).catch(() => notFound());
   const permissions = context.membership?.permissions ?? [];
   const publication = await getPublishedSnapshot(id, permissions);
-  return <PortalShell projectId={id} projectName={publication?.snapshot.project.name ?? "Proyecto sin publicar"} userName={context.user.name}>{children}</PortalShell>;
+  return <PortalShell projectId={id} projectName={publication?.snapshot.project.name ?? "Proyecto sin publicar"} userName={context.user.name} permissions={permissions}>{children}</PortalShell>;
 }

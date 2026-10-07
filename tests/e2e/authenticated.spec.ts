@@ -1,5 +1,8 @@
+import { readFile } from "node:fs/promises";
 import { expect, test, type BrowserContext, type Locator, type Page } from "@playwright/test";
 import { authenticatedFixture as fixture } from "./fixtures/authenticated";
+
+test.use({ trace: "off" });
 
 const credentials = {
   admin: {
@@ -11,6 +14,20 @@ const credentials = {
     password: process.env.E2E_RESTRICTED_PASSWORD,
   },
 };
+
+const mailboxPath = process.env.E2E_MAILBOX_PATH;
+
+async function latestMailLink(email: string, requestedAt: number) {
+  try {
+    const messages = (await readFile(mailboxPath!, "utf8")).trim().split("\n").filter(Boolean)
+      .map((line) => JSON.parse(line) as { to: string; text: string; createdAt: string })
+      .filter((message) => message.to === email && new Date(message.createdAt).getTime() >= requestedAt);
+    return messages.at(-1)?.text.match(/https?:\/\/[^\s]+/)?.[0];
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+    throw error;
+  }
+}
 
 type CapturedAction = {
   url: string;
@@ -59,6 +76,7 @@ test.describe("authenticated backoffice @authenticated", () => {
       E2E_ADMIN_PASSWORD: credentials.admin.password,
       E2E_RESTRICTED_EMAIL: credentials.restricted.email,
       E2E_RESTRICTED_PASSWORD: credentials.restricted.password,
+      E2E_MAILBOX_PATH: mailboxPath,
     }).filter(([, value]) => !value).map(([name]) => name);
     if (missing.length) {
       throw new Error(`Authenticated E2E fixture is mandatory; missing ${missing.join(", ")}`);
@@ -137,6 +155,51 @@ test.describe("authenticated backoffice @authenticated", () => {
     await expect(submission(adminPage, fixture.retrySubmissionName)).toContainText("Intentos: 1");
 
     expect(adminErrors).toEqual([]);
+    await adminContext.close();
+  });
+
+  test("delivers, consumes, and prevents reuse of a client invitation", async ({ browser }) => {
+    const inviteeEmail = "invited.portal@syntavera.invalid";
+    const requestedAt = Date.now() - 1_000;
+    const adminContext = await browser.newContext();
+    const adminPage = await adminContext.newPage();
+    await signIn(adminPage, "admin");
+    await adminPage.goto(`/admin/projects/${fixture.projectId}`);
+    const invitationForm = adminPage.locator("form").filter({ has: adminPage.getByRole("heading", { name: "Invitar cliente" }) });
+    await invitationForm.getByLabel("Nombre").fill("Cliente invitado sintético");
+    await invitationForm.getByLabel("Email").fill(inviteeEmail);
+    await invitationForm.getByRole("button", { name: "Enviar invitación" }).click();
+    await expect(adminPage).toHaveURL(new RegExp(`/admin/projects/${fixture.projectId}\\?invite=sent`));
+    await expect(adminPage.getByRole("status")).toContainText("Invitación enviada");
+    await expect(adminPage.locator("#client-access")).toContainText("Invitación enviada");
+
+    let invitationUrl: string | undefined;
+    await expect.poll(async () => {
+      invitationUrl = await latestMailLink(inviteeEmail, requestedAt);
+      return Boolean(invitationUrl);
+    }).toBe(true);
+
+    const clientContext = await browser.newContext();
+    const clientPage = await clientContext.newPage();
+    await clientPage.goto(invitationUrl!);
+    await expect(clientPage.getByRole("heading", { level: 1 })).toHaveText("Activa tu acceso privado.");
+    const activationRequestedAt = Date.now() - 1_000;
+    await clientPage.getByRole("button", { name: "Aceptar invitación y enviar acceso" }).click();
+    await expect(clientPage).toHaveURL(/\/login\?sent=1$/);
+
+    let magicUrl: string | undefined;
+    await expect.poll(async () => {
+      const candidate = await latestMailLink(inviteeEmail, activationRequestedAt);
+      magicUrl = candidate && candidate !== invitationUrl ? candidate : undefined;
+      return Boolean(magicUrl);
+    }).toBe(true);
+    await clientPage.goto(magicUrl!);
+    await expect(clientPage).toHaveURL(/\/portal$/);
+    await expect(clientPage.getByText(fixture.projectName)).toBeVisible();
+
+    await clientPage.goto(invitationUrl!);
+    await expect(clientPage.getByRole("heading", { level: 1 })).toHaveText("Este enlace ya no está disponible.");
+    await clientContext.close();
     await adminContext.close();
   });
 });

@@ -6,10 +6,12 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/modules/audit/service";
 import { requirePermission } from "@/modules/auth/guards";
-import { criticalPriorityIsConfirmed } from "./policy";
+import { getPublishedSnapshot } from "@/modules/publication/service";
+import { getClientTicket } from "./service";
+import { criticalPriorityIsConfirmed, snapshotContainsSupportResource, ticketCanReceiveClientReply } from "./policy";
 
 export async function createClientTicketAction(projectId: string, formData: FormData) {
-  const { user } = await requirePermission(projectId, "COMMENT");
+  const { user, membership } = await requirePermission(projectId, "COMMENT");
   const parsed = z.object({
     subject: z.string().trim().min(4).max(180),
     body: z.string().trim().min(10).max(5000),
@@ -22,12 +24,13 @@ export async function createClientTicketAction(projectId: string, formData: Form
   if (!criticalPriorityIsConfirmed(parsed.priority, parsed.criticalConfirmed)) throw new Error("Critical priority requires explicit confirmation");
   const relationIds = [parsed.milestoneId, parsed.deliverableId, parsed.decisionId].filter(Boolean);
   if (relationIds.length > 1) throw new Error("A ticket can reference one project resource at a time");
-  const [milestone, deliverable, decision] = await Promise.all([
-    parsed.milestoneId ? prisma.milestone.findFirst({ where: { id: parsed.milestoneId, projectId }, select: { id: true } }) : null,
-    parsed.deliverableId ? prisma.deliverable.findFirst({ where: { id: parsed.deliverableId, projectId }, select: { id: true } }) : null,
-    parsed.decisionId ? prisma.decision.findFirst({ where: { id: parsed.decisionId, projectId }, select: { id: true } }) : null,
-  ]);
-  if ((parsed.milestoneId && !milestone) || (parsed.deliverableId && !deliverable) || (parsed.decisionId && !decision)) throw new Error("Related resource is outside the project");
+  const published = await getPublishedSnapshot(projectId, membership?.permissions ?? []);
+  if (!published) throw new Error("No published project snapshot");
+  if (!snapshotContainsSupportResource(published.snapshot, {
+    ...(parsed.milestoneId ? { milestoneId: parsed.milestoneId } : {}),
+    ...(parsed.deliverableId ? { deliverableId: parsed.deliverableId } : {}),
+    ...(parsed.decisionId ? { decisionId: parsed.decisionId } : {}),
+  })) throw new Error("Related resource is not in the current published snapshot");
   const ticket = await prisma.$transaction(async (tx) => {
     const created = await tx.ticket.create({ data: { projectId, subject: parsed.subject, priority: parsed.priority, milestoneId: parsed.milestoneId || null, deliverableId: parsed.deliverableId || null, decisionId: parsed.decisionId || null, createdById: user.id } });
     await tx.ticketMessage.create({ data: { ticketId: created.id, authorId: user.id, body: parsed.body, visibility: "CLIENT" } });
@@ -41,8 +44,9 @@ export async function createClientTicketAction(projectId: string, formData: Form
 export async function replyClientTicketAction(projectId: string, ticketId: string, formData: FormData) {
   const { user } = await requirePermission(projectId, "COMMENT");
   const body = z.string().trim().min(2).max(5000).parse(formData.get("body"));
-  const ticket = await prisma.ticket.findFirst({ where: { id: ticketId, projectId } });
+  const ticket = await getClientTicket(projectId, ticketId);
   if (!ticket) throw new Error("Ticket not found");
+  if (!ticketCanReceiveClientReply(ticket.status)) throw new Error("Closed tickets cannot receive replies");
   await prisma.$transaction(async (tx) => {
     const message = await tx.ticketMessage.create({ data: { ticketId, authorId: user.id, body, visibility: "CLIENT" } });
     await tx.ticket.update({ where: { id: ticketId }, data: { status: "IN_PROGRESS" } });

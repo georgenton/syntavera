@@ -1,9 +1,9 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client, type HeadObjectCommandOutput } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getServerEnv } from "@/lib/env";
-import { objectKeyBelongsToProject, validateUploadPolicy } from "./upload-policy";
+import { objectKeyBelongsToProject, StorageValidationError, validateUploadPolicy } from "./upload-policy";
 
 function storageConfig() {
   const env = getServerEnv();
@@ -45,9 +45,18 @@ export async function createPrivateDownloadUrl(storageKey: string, fileName: str
 
 export async function confirmPrivateUpload(input: { projectId: string; storageKey: string; mimeType: string; sizeBytes: number }) {
   validateUpload(input);
-  if (!objectKeyBelongsToProject(input.storageKey, input.projectId)) throw new Error("Object key is outside the project scope");
+  if (!objectKeyBelongsToProject(input.storageKey, input.projectId)) throw new StorageValidationError("Object key is outside the project scope");
   const env = storageConfig();
-  const object = await client().send(new HeadObjectCommand({ Bucket: env.S3_BUCKET, Key: input.storageKey }));
-  if (object.ContentLength !== input.sizeBytes || object.ContentType !== input.mimeType) throw new Error("Uploaded object metadata does not match the request");
+  let object: HeadObjectCommandOutput;
+  try {
+    object = await client().send(new HeadObjectCommand({ Bucket: env.S3_BUCKET, Key: input.storageKey }));
+  } catch (error) {
+    const status = error && typeof error === "object" && "$metadata" in error
+      ? (error.$metadata as { httpStatusCode?: number }).httpStatusCode
+      : undefined;
+    if (status === 404) throw new StorageValidationError("Uploaded object was not found");
+    throw error;
+  }
+  if (object.ContentLength !== input.sizeBytes || object.ContentType !== input.mimeType) throw new StorageValidationError("Uploaded object metadata does not match the request");
   return { checksum: object.ChecksumSHA256 ?? object.ETag?.replaceAll('"', "") ?? null };
 }

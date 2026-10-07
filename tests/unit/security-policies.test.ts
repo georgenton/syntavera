@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { clientProjectAccessGrants } from "@/modules/auth/policy";
 import { clientCanJoinOrganization, invitationCanBeConsumed } from "@/modules/auth/invitation-policy";
 import { snapshotContainsDocumentVersion } from "@/modules/projects/acceptance-policy";
-import { invoiceInputSchema } from "@/modules/projects/billing-policy";
+import { invoiceInputSchema, isSafeExternalHttpUrl } from "@/modules/projects/billing-policy";
 import { projectSnapshotSchema } from "@/modules/publication/schema";
 import { objectKeyBelongsToProject, validateUploadPolicy } from "@/modules/storage/upload-policy";
-import { clientVisibleMessages, criticalPriorityIsConfirmed } from "@/modules/support/policy";
+import { clientVisibleMessages, criticalPriorityIsConfirmed, snapshotContainsSupportResource, ticketCanReceiveClientReply } from "@/modules/support/policy";
 
 const id = (suffix: number) => `00000000-0000-4000-8000-${String(suffix).padStart(12, "0")}`;
 
@@ -41,6 +41,11 @@ describe("costly security boundaries", () => {
     expect(clientVisibleMessages(messages)).toEqual([{ visibility: "CLIENT", body: "visible" }]);
     expect(criticalPriorityIsConfirmed("CRITICAL", undefined)).toBe(false);
     expect(criticalPriorityIsConfirmed("CRITICAL", "on")).toBe(true);
+    const snapshot = { milestones: [{ id: id(1) }], deliverables: [{ id: id(2) }], decisions: [{ id: id(3) }] };
+    expect(snapshotContainsSupportResource(snapshot, { deliverableId: id(2) })).toBe(true);
+    expect(snapshotContainsSupportResource(snapshot, { deliverableId: id(4) })).toBe(false);
+    expect(ticketCanReceiveClientReply("IN_PROGRESS")).toBe(true);
+    expect(ticketCanReceiveClientReply("CLOSED")).toBe(false);
   });
 
   it("keeps document and payment states independent", () => {
@@ -48,6 +53,16 @@ describe("costly security boundaries", () => {
     expect(parsed.documentState).toBe("DRAFT");
     expect(parsed.paymentState).toBe("PAID");
     expect(invoiceInputSchema.safeParse({ ...parsed, paymentState: "AUTHORIZED" }).success).toBe(false);
+    expect(isSafeExternalHttpUrl("https://billing.example.test/invoice/1")).toBe(true);
+    expect(isSafeExternalHttpUrl("http://localhost:3000/invoice/1")).toBe(true);
+    expect(isSafeExternalHttpUrl("javascript:alert(1)")).toBe(false);
+    expect(isSafeExternalHttpUrl("data:text/html,test")).toBe(false);
+    expect(invoiceInputSchema.safeParse({ ...parsed, externalUrl: "javascript:alert(1)" }).success).toBe(false);
+  });
+
+  it("sanitizes unsafe legacy invoice links while reading snapshots", () => {
+    const snapshot = projectSnapshotSchema.parse({ schemaVersion: 1, generatedAt: "2026-09-30T12:00:00.000Z", project: { id: id(1), name: "P", objective: "O", summary: "S", status: "ACTIVE", startDate: null, targetDate: null }, phases: [], milestones: [], deliverables: [], decisions: [], billing: [{ id: id(8), number: "INV-8", documentState: "ISSUED", paymentState: "UNPAID", currency: "USD", totalMinor: 100, issuedAt: null, dueAt: null, externalUrl: "javascript:alert(1)" }] });
+    expect(snapshot.billing[0]?.externalUrl).toBeNull();
   });
 
   it("enforces upload type, size, and project-key scope", () => {

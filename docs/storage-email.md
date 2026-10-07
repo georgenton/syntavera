@@ -14,7 +14,7 @@ Rotar credenciales si aparecen en logs o clientes. No registrar URLs firmadas.
 
 SMTP envía invitaciones, magic links y notificaciones de contacto. Variables: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM`, `CONTACT_NOTIFICATION_TO`, `CONTACT_ACCEPT_WITHOUT_NOTIFICATION`, `CONTACT_DELIVERY_VERIFIED`.
 
-En desarrollo y test, si `SMTP_HOST` no existe, el adapter escribe el mensaje completo entre marcadores `[development-mail]` en la salida del servidor para poder recorrer invitaciones y magic links. En producción la ausencia de SMTP produce un error explícito; nunca se informa un envío ficticio.
+En desarrollo y test, si `SMTP_HOST` no existe, el adapter escribe el mensaje completo entre marcadores `[development-mail]` en la salida del servidor para poder recorrer invitaciones y magic links. CI puede dirigir esos mensajes a `E2E_MAILBOX_PATH`, un archivo temporal no publicado que permite probar enlaces de un solo uso sin transporte externo. Esa variable está prohibida en producción. En producción la ausencia de SMTP produce un error explícito; nunca se informa un envío ficticio.
 
 SPF, DKIM y DMARC deben validarse antes de producción. `CONTACT_NOTIFICATION_TO=contacto@syntavera.dev` es el destino confirmado. `EMAIL_FROM` debe ser un remitente verificado distinto de las credenciales del relay; el email escrito por la persona se usa únicamente como `Reply-To`.
 

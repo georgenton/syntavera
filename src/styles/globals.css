@@ -226,6 +226,7 @@ ul, ol { margin: 0; padding: 0; }
 .cta-band__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-4); }
 
 .notice { padding: var(--space-7); border: var(--border-default); border-left: 3px solid var(--signal-4); background: var(--surface-inset); }
+.notice--success { border-left-color: var(--signal-4); }
 .notice--warning { border-left-color: var(--amber-5); }
 .notice h2, .notice h3 { margin-bottom: var(--space-3); }
 .notice p + p { margin-top: var(--space-4); }

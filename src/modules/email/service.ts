@@ -1,4 +1,5 @@
 import "server-only";
+import { appendFile } from "node:fs/promises";
 import nodemailer from "nodemailer";
 import { getServerEnv } from "@/lib/env";
 
@@ -31,12 +32,24 @@ function getMailer(): Mailer {
       },
     };
   }
+  if (env.NODE_ENV !== "production" && env.E2E_MAILBOX_PATH) {
+    return {
+      async send(message) {
+        await appendFile(env.E2E_MAILBOX_PATH!, `${JSON.stringify({ ...message, createdAt: new Date().toISOString() })}\n`, { encoding: "utf8", mode: 0o600 });
+      },
+    };
+  }
   if (env.NODE_ENV === "production") throw new Error("SMTP is not configured");
   return {
     async send(message) {
       process.stdout.write(`[development-mail]\nTo: ${message.to}\nSubject: ${message.subject}\n${message.text}\n[/development-mail]\n`);
     },
   };
+}
+
+export function invitationEmailDeliveryConfigured() {
+  const env = getServerEnv();
+  return Boolean(env.SMTP_HOST || (env.NODE_ENV !== "production" && env.E2E_MAILBOX_PATH));
 }
 
 export async function sendMagicLinkEmail(email: string, url: string) {
