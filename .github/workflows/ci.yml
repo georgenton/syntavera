@@ -36,6 +36,9 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
     timeout-minutes: 20
+    env:
+      APP_URL: http://127.0.0.1:3000
+      BETTER_AUTH_URL: http://127.0.0.1:3000
     services:
       postgres:
         image: postgres:18-alpine
