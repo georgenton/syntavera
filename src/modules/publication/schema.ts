@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isSafeExternalHttpUrl } from "@/modules/projects/billing-policy";
 
 const isoDate = z.iso.datetime().nullable();
 const workStatus = z.enum(["NOT_STARTED", "IN_PROGRESS", "BLOCKED", "IN_REVIEW", "COMPLETED"]);
@@ -42,7 +43,7 @@ export const projectSnapshotSchema = z.object({
     id: z.uuid(), title: z.string(), outcome: z.string(), decidedAt: z.iso.datetime(),
   }).strict()),
   billing: z.array(z.object({
-    id: z.uuid(), number: z.string(), documentState: z.enum(["DRAFT", "ISSUED", "VOID"]), paymentState: z.enum(["UNPAID", "PARTIALLY_PAID", "PAID", "OVERDUE", "REFUNDED"]), currency: z.string(), totalMinor: z.number().int(), issuedAt: isoDate, dueAt: isoDate, externalUrl: z.url().nullable(),
+    id: z.uuid(), number: z.string(), documentState: z.enum(["DRAFT", "ISSUED", "VOID"]), paymentState: z.enum(["UNPAID", "PARTIALLY_PAID", "PAID", "OVERDUE", "REFUNDED"]), currency: z.string(), totalMinor: z.number().int(), issuedAt: isoDate, dueAt: isoDate, externalUrl: z.string().nullable().transform((value) => value && isSafeExternalHttpUrl(value) ? value : null),
   }).strict()),
 }).strict();
 

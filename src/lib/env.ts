@@ -14,6 +14,7 @@ const serverEnvSchema = z.object({
   SMTP_SECURE: booleanFromString.default(false),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
+  E2E_MAILBOX_PATH: z.string().optional(),
   EMAIL_FROM: z.string().min(1).default("SyntaVera <no-reply@syntavera.dev>"),
   CONTACT_NOTIFICATION_TO: z.email().optional(),
   CONTACT_ACCEPT_WITHOUT_NOTIFICATION: booleanFromString.default(false),
@@ -33,6 +34,9 @@ const serverEnvSchema = z.object({
 }).superRefine((env, context) => {
   if (Boolean(env.SMTP_USER) !== Boolean(env.SMTP_PASSWORD)) {
     context.addIssue({ code: "custom", message: "SMTP_USER and SMTP_PASSWORD must be configured together", path: ["SMTP_USER"] });
+  }
+  if (env.NODE_ENV === "production" && env.E2E_MAILBOX_PATH) {
+    context.addIssue({ code: "custom", message: "E2E_MAILBOX_PATH is forbidden in production", path: ["E2E_MAILBOX_PATH"] });
   }
 });
 

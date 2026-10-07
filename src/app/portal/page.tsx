@@ -3,9 +3,10 @@ import { BrandPattern } from "@/components/site/brand-pattern";
 import { BrandMark } from "@/components/site/brand-mark";
 import { SignOutButton } from "@/components/portal/sign-out-button";
 import { StatusBadge } from "@/components/portal/status-badge";
-import { projectSnapshotSchema } from "@/modules/publication/schema";
+import { projectSnapshotSchema, selectSnapshotForPermissions } from "@/modules/publication/schema";
 import { prisma } from "@/lib/db";
 import { requireCurrentUser } from "@/modules/auth/guards";
+import { portalDashboardSummary } from "@/modules/projects/portal-policy";
 
 export default async function PortalIndexPage() {
   const { user } = await requireCurrentUser();
@@ -13,19 +14,15 @@ export default async function PortalIndexPage() {
   const projects = memberships.map((membership) => {
     const publication = membership.project.publications[0];
     const parsed = publication ? projectSnapshotSchema.safeParse(publication.snapshot) : null;
-    return { membership, publication, snapshot: parsed?.success ? parsed.data : null };
+    return { membership, publication, snapshot: parsed?.success ? selectSnapshotForPermissions(parsed.data, membership.permissions) : null };
   });
-  const published = projects.flatMap((item) => item.snapshot ? [item.snapshot] : []);
-  const pendingActions = published.reduce((sum, item) => sum + item.deliverables.filter((deliverable) => ["IN_REVIEW", "CHANGES_REQUESTED"].includes(deliverable.status)).length, 0);
-  const openMilestones = published.reduce((sum, item) => sum + item.milestones.filter((milestone) => milestone.status !== "COMPLETED").length, 0);
-  const nextDeliveries = published.reduce((sum, item) => sum + item.deliverables.filter((deliverable) => !["ACCEPTED", "ARCHIVED"].includes(deliverable.status)).length, 0);
-  const invoicesWithBalance = published.reduce((sum, item) => sum + item.billing.filter((invoice) => ["UNPAID", "PARTIALLY_PAID", "OVERDUE"].includes(invoice.paymentState)).length, 0);
+  const summary = portalDashboardSummary(projects.map((item) => ({ snapshot: item.snapshot, permissions: item.membership.permissions })));
   const accountMetrics = [
-    ["En ejecución", published.filter((item) => item.project.status === "ACTIVE").length, `${published.length} publicados`],
-    ["Acciones pendientes", pendingActions, "Entregables por revisar"],
-    ["Hitos abiertos", openMilestones, "Según snapshots"],
-    ["Próximas entregas", nextDeliveries, "No aceptadas"],
-    ["Facturas con saldo", invoicesWithBalance, "Con acceso financiero"],
+    ["En ejecución", summary.activeProjects, `${summary.publishedProjects} publicados`],
+    ["Aprobaciones pendientes", summary.pendingApprovals, "Solo con permiso APPROVE"],
+    ["Hitos abiertos", summary.openMilestones, "Según snapshots"],
+    ["Vistas publicadas", summary.publishedProjects, `${projects.length} proyectos disponibles`],
+    ...(summary.hasFinance ? [["Facturas con saldo", summary.invoicesWithBalance, "Solo proyectos con FINANCE"]] : []),
   ] as const;
   const initials = user.name.split(" ").map((part) => part[0]).slice(0, 2).join("");
   const organization = projects[0]?.membership.project.organization.name ?? "Área de clientes";
@@ -35,7 +32,7 @@ export default async function PortalIndexPage() {
     <main id="main-content">
       <section className="portal-dashboard__hero sv-dark">
         <BrandPattern variant="field" onDark seed={21} width={1400} height={360} opacity={0.28} mask="fade-left" />
-        <div><p className="sv-eyebrow">Portal cliente</p><span className="portal-dashboard__org">{organization}</span><h1>Buenos días, {user.name.split(" ")[0]}.</h1><p>Tienes {pendingActions} acciones pendientes en {published.length} proyectos publicados.</p></div>
+        <div><p className="sv-eyebrow">Portal cliente</p><span className="portal-dashboard__org">{organization}</span><h1>Buenos días, {user.name.split(" ")[0]}.</h1><p>Tienes {summary.pendingApprovals} aprobaciones pendientes en {summary.publishedProjects} proyectos publicados.</p></div>
       </section>
       <div className="workspace-page portal-dashboard__content">
         <section className="metric-grid portal-account-metrics" aria-label="Indicadores de la cuenta">{accountMetrics.map(([label, value, detail]) => <article className="metric-card" key={label}><p>{label}</p><span>{value}</span><small>{detail}</small></article>)}</section>
@@ -45,8 +42,8 @@ export default async function PortalIndexPage() {
             const summary = snapshot?.project.summary ?? "El equipo todavía no ha publicado la primera vista del cliente.";
             const completed = snapshot?.milestones.filter((milestone) => milestone.status === "COMPLETED").length ?? 0;
             const milestones = snapshot?.milestones.length ?? 0;
-            const actions = snapshot?.deliverables.filter((deliverable) => ["IN_REVIEW", "CHANGES_REQUESTED"].includes(deliverable.status)).length ?? 0;
-            return <Link className="project-card" href={`/portal/p/${membership.projectId}`} key={membership.id}><div className="project-card__top"><StatusBadge value={snapshot?.project.status ?? "PENDING"} /><span>Snapshot v{publication?.version ?? "—"}</span></div><h3>{name}</h3><p>{summary}</p><div className="project-card__stats"><span><small>Hitos</small>{completed}/{milestones || "—"}</span><span><small>Acciones</small>{actions}</span><span><small>Permisos</small>{membership.permissions.length}</span></div><strong>Entrar →</strong></Link>;
+            const approvals = membership.permissions.includes("APPROVE") ? snapshot?.deliverables.filter((deliverable) => deliverable.status === "IN_REVIEW").length ?? 0 : 0;
+            return <Link className="project-card" href={`/portal/p/${membership.projectId}`} key={membership.id}><div className="project-card__top"><StatusBadge value={snapshot?.project.status ?? "PENDING"} /><span>Snapshot v{publication?.version ?? "—"}</span></div><h3>{name}</h3><p>{summary}</p><div className="project-card__stats"><span><small>Hitos</small>{completed}/{milestones || "—"}</span><span><small>Aprobaciones</small>{approvals}</span><span><small>Permisos</small>{membership.permissions.length}</span></div><strong>Entrar →</strong></Link>;
           })}</div>
           {memberships.length === 0 ? <div className="notice"><h2>Sin proyectos activos</h2><p>Tu sesión es válida, pero todavía no hay un acceso activo con permiso de lectura.</p></div> : null}
         </section>

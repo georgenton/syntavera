@@ -4,12 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { getServerEnv } from "@/lib/env";
 import { writeAuditLog } from "@/modules/audit/service";
 import { requireInternalProjectAccess, requireInternalUser } from "@/modules/auth/guards";
-import { createClientInvitation } from "@/modules/auth/invitations";
-import { clientCanJoinOrganization } from "@/modules/auth/invitation-policy";
-import { sendInvitationEmail } from "@/modules/email/service";
+import { clientInvitationDeliveryReady, deliverClientInvitation, retryClientInvitation } from "@/modules/auth/invitations";
 import { publishProjectSnapshot } from "@/modules/publication/service";
 
 const slug = z.string().trim().min(2).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -157,23 +154,14 @@ export async function inviteClientAction(projectId: string, formData: FormData) 
     email: z.email().transform((value) => value.trim().toLowerCase()),
     permissions: z.array(z.enum(["VIEW", "COMMENT", "APPROVE", "FINANCE"])).min(1),
   }).parse({ name: formData.get("name"), email: formData.get("email"), permissions: formData.getAll("permissions") });
-  const project = await prisma.project.findUniqueOrThrow({ where: { id: projectId }, select: { name: true, organizationId: true } });
-  const existing = await prisma.user.findUnique({ where: { email: parsed.email } });
-  if (existing?.kind === "INTERNAL") throw new Error("The email belongs to an internal user");
-  if (existing && !clientCanJoinOrganization(existing.organizationId, project.organizationId)) {
-    throw new Error("The client belongs to another organization");
-  }
-  const client = existing
-    ? await prisma.user.update({ where: { id: existing.id }, data: { name: parsed.name, organizationId: project.organizationId } })
-    : await prisma.user.create({ data: { name: parsed.name, email: parsed.email, kind: "CLIENT", organizationId: project.organizationId } });
-  await prisma.projectMembership.upsert({
-    where: { projectId_userId: { projectId, userId: client.id } },
-    create: { projectId, userId: client.id, permissions: parsed.permissions, status: "INVITED" },
-    update: { permissions: parsed.permissions, status: "INVITED", activatedAt: null, revokedAt: null },
-  });
-  const { invitation, token } = await createClientInvitation({ projectId, email: parsed.email, createdById: actor.id });
-  const env = getServerEnv();
-  await sendInvitationEmail({ email: parsed.email, projectName: project.name, inviteUrl: `${env.APP_URL}/invite/${token}` });
-  await writeAuditLog({ actorId: actor.id, projectId, action: "CLIENT_INVITED", targetType: "ClientInvitation", targetId: invitation.id, metadata: { permissions: parsed.permissions } });
-  revalidatePath(`/admin/projects/${projectId}`);
+  if (!clientInvitationDeliveryReady()) redirect(`/admin/projects/${projectId}?invite=not-configured#client-access`);
+  const result = await deliverClientInvitation({ projectId, ...parsed, createdById: actor.id });
+  redirect(`/admin/projects/${projectId}?invite=${result.status}#client-access`);
+}
+
+export async function retryClientInvitationAction(projectId: string, userId: string) {
+  const { user: actor } = await requireInternalProjectAccess(projectId);
+  if (!clientInvitationDeliveryReady()) redirect(`/admin/projects/${projectId}?invite=not-configured#client-access`);
+  const result = await retryClientInvitation({ projectId, userId, createdById: actor.id });
+  redirect(`/admin/projects/${projectId}?invite=${result.status}#client-access`);
 }

@@ -6,15 +6,16 @@ Fecha: 2026-10-06.
 
 El run remoto [CI #4](https://github.com/georgenton/syntavera/actions/runs/36785794709) ejecutó el commit `8639d4821d32d4fd11de97170fbb9d2f51edb86a`. El job `quality` generó el cliente Prisma, pero el job `e2e` empezó Playwright desde otro checkout limpio sin ejecutar `pnpm prisma:generate`. Next.js falló al resolver `@/generated/prisma/client` desde `src/lib/db.ts`.
 
-Generar el cliente y migrar una base son operaciones distintas. El job público de navegador solo necesita `pnpm prisma:generate`; no ejecuta migraciones ni requiere PostgreSQL porque Contact permanece cerrado y las rutas revisadas no consultan datos privados.
+Generar el cliente y migrar una base son operaciones distintas. La regresión pública solo necesita el cliente generado; la comprobación autenticada añadida posteriormente usa PostgreSQL desechable, aplica las migraciones revisadas y carga datos sintéticos antes de iniciar Playwright.
 
 ## Corrección
 
 - El job `e2e` ejecuta el script fijado `pnpm prisma:generate` después de `pnpm install --frozen-lockfile` y antes de instalar/iniciar Playwright.
 - Prisma 7.10.0, Node.js 24.21.0, pnpm 10.33.2 y Playwright 1.63.0 siguen fijados por el proyecto; no se actualizaron dependencias.
 - CI fija `PUBLIC_CONTACT_ENABLED=false` y `CONTACT_DELIVERY_VERIFIED=false`.
+- El job `e2e` levanta PostgreSQL 18 desechable, ejecuta `prisma:migrate:deploy`, carga perfiles sintéticos y recorre backoffice, invitación, magic link y portal con autenticación real.
 - Los snapshots ahora incluyen `{platform}`. Las referencias Darwin y Linux se conservan por separado porque Chromium usa rasterización y fuentes del sistema y una referencia creada en macOS no es canónica para Ubuntu.
-- Ante un fallo, CI sube `playwright-report/` y `test-results/` durante siete días. El job público excluye por etiqueta la comprobación autenticada, por lo que esos artefactos no contienen sesión, credenciales ni datos reales.
+- Ante un fallo, CI sube `playwright-report/` y `test-results/` durante siete días. Las suites autenticadas desactivan trazas para no persistir cookies ni estado de sesión; sus capturas y reportes contienen únicamente identidades sintéticas. El buzón simulado no se publica como artefacto.
 
 ## Diferencia visual
 
@@ -34,9 +35,9 @@ Playwright 1.63.0 generó únicamente las cinco referencias Linux que faltaban. 
 
 La estabilización se reprodujo desde otro clon limpio usando exactamente el digest fijado y las referencias existentes, sin `--update-snapshots`: nueve pruebas funcionales públicas y cinco comparaciones visuales terminaron correctamente (14/14), sin reintentos. Chrome informó la versión 153.0.8010.12. Un segundo clon limpio completó `lint`, `typecheck`, 38 pruebas unitarias y `build`. No se ejecutaron migraciones ni se conectó PostgreSQL. Al cerrar esta nota previa al push, el nuevo resultado remoto del pull request continúa pendiente.
 
-## Comprobación autenticada pendiente
+## Comprobación autenticada
 
-La suite autenticada no se declara aprobada. Requiere una base PostgreSQL desechable migrada, usuarios y proyectos enteramente sintéticos, autenticación real de la aplicación y servicios externos simulados. Debe ejecutarse en un job separado; no debe publicar storage state, cookies, contraseñas ni trazas autenticadas.
+La suite autenticada usa una base PostgreSQL desechable migrada, usuarios, organizaciones y proyectos enteramente sintéticos, autenticación real de la aplicación y correo simulado en un archivo temporal no publicado. Cubre aislamiento entre organizaciones, permisos `VIEW`/`COMMENT`/`APPROVE`/`FINANCE`, invitación y consumo único, portal, aceptación, soporte, logout/relogin y vistas 1440/768/390. No publica storage state, cookies, contraseñas ni trazas autenticadas. Cada candidato sigue necesitando un resultado remoto satisfactorio de los jobs `quality` y `e2e` para considerarse aprobado.
 
 ## Disparadores y publicación
 
