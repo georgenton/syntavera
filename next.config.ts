@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const privateStorageOrigin = "https://syntavera-app-staging-private.e56c3b040e55059b2dde377f03c08e89.r2.cloudflarestorage.com";
+
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -19,7 +21,7 @@ const securityHeaders = [
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
       `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
-      "connect-src 'self'",
+      `connect-src 'self' ${privateStorageOrigin}`,
       ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
     ].join("; "),
   },
