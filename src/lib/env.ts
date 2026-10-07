@@ -14,6 +14,9 @@ const serverEnvSchema = z.object({
   SMTP_SECURE: booleanFromString.default(false),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
+  SMTP_OAUTH_TENANT_ID: z.string().optional(),
+  SMTP_OAUTH_CLIENT_ID: z.string().optional(),
+  SMTP_OAUTH_CLIENT_SECRET: z.string().optional(),
   E2E_MAILBOX_PATH: z.string().optional(),
   EMAIL_FROM: z.string().min(1).default("SyntaVera <no-reply@syntavera.dev>"),
   CONTACT_NOTIFICATION_TO: z.email().optional(),
@@ -32,8 +35,27 @@ const serverEnvSchema = z.object({
   SIGNED_URL_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(300),
   MAX_UPLOAD_BYTES: z.coerce.number().int().positive().default(26_214_400),
 }).superRefine((env, context) => {
-  if (Boolean(env.SMTP_USER) !== Boolean(env.SMTP_PASSWORD)) {
-    context.addIssue({ code: "custom", message: "SMTP_USER and SMTP_PASSWORD must be configured together", path: ["SMTP_USER"] });
+  const oauthValues = [env.SMTP_OAUTH_TENANT_ID, env.SMTP_OAUTH_CLIENT_ID, env.SMTP_OAUTH_CLIENT_SECRET];
+  const oauthStarted = oauthValues.some(Boolean);
+  const oauthReady = oauthValues.every(Boolean);
+
+  if (oauthStarted && !oauthReady) {
+    context.addIssue({ code: "custom", message: "SMTP OAuth tenant, client, and secret must be configured together", path: ["SMTP_OAUTH_CLIENT_ID"] });
+  }
+  if (oauthReady && !env.SMTP_USER) {
+    context.addIssue({ code: "custom", message: "SMTP_USER is required for SMTP OAuth", path: ["SMTP_USER"] });
+  }
+  if (oauthReady && env.SMTP_PASSWORD) {
+    context.addIssue({ code: "custom", message: "SMTP_PASSWORD must be unset when SMTP OAuth is configured", path: ["SMTP_PASSWORD"] });
+  }
+  if (env.SMTP_PASSWORD && !env.SMTP_USER) {
+    context.addIssue({ code: "custom", message: "SMTP_USER is required when SMTP_PASSWORD is configured", path: ["SMTP_USER"] });
+  }
+  if (env.SMTP_USER && !env.SMTP_PASSWORD && !oauthReady) {
+    context.addIssue({ code: "custom", message: "SMTP_USER requires password or OAuth credentials", path: ["SMTP_USER"] });
+  }
+  if ((oauthStarted || env.SMTP_USER || env.SMTP_PASSWORD) && !env.SMTP_HOST) {
+    context.addIssue({ code: "custom", message: "SMTP_HOST is required when SMTP authentication is configured", path: ["SMTP_HOST"] });
   }
   if (env.NODE_ENV === "production" && env.E2E_MAILBOX_PATH) {
     context.addIssue({ code: "custom", message: "E2E_MAILBOX_PATH is forbidden in production", path: ["E2E_MAILBOX_PATH"] });
