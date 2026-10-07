@@ -11,7 +11,8 @@ export function DocumentUploadForm({ projectId, documentId }: { projectId: strin
     event.preventDefault();
     setPending(true);
     setMessage(undefined);
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const file = form.get("file");
     const label = String(form.get("label") ?? "").trim();
     if (!(file instanceof File) || !file.size) {
@@ -28,7 +29,7 @@ export function DocumentUploadForm({ projectId, documentId }: { projectId: strin
       if (!uploadResponse.ok) throw new Error("El almacenamiento rechazó el archivo.");
       const completionResponse = await fetch("/api/files/complete-upload", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...metadata, storageKey: signed.storageKey, documentId, label }) });
       if (!completionResponse.ok) throw new Error("No se pudo verificar la carga.");
-      event.currentTarget.reset();
+      formElement.reset();
       setMessage("Versión verificada y registrada. Recarga para verla en el historial.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo completar la carga.");
