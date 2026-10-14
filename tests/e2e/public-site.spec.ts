@@ -41,6 +41,8 @@ test("admin remains protected from an anonymous browser", async ({ page }) => {
 test("incomplete cases are noindex and absent from sitemap", async ({ page, request }) => {
   await page.goto("/labs/drillops");
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  await expect(page.getByRole("link", { name: "Explorar demo sintética de solo lectura" })).toHaveAttribute("href", "https://demo.drillops.syntavera.dev");
+  await expect(page.getByText("Datos sintéticos · Solo lectura · Sin validación de desempeño en campo")).toBeVisible();
   await expect(page.getByText("Reunir señales, cálculos y referencias técnicas sin perder el rastro de cómo se llega a una recomendación operacional.")).toBeVisible();
   await expect(page.getByText(/por completar|placeholder|fuera del sitemap/i)).toHaveCount(0);
   const sitemap = await (await request.get("/sitemap.xml")).text();

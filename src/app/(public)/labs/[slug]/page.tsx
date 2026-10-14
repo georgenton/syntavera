@@ -56,6 +56,7 @@ export default async function LabCasePage({ params }: { params: Promise<{ slug: 
             <ButtonLink href="/labs" variant="secondary">Volver a Labs</ButtonLink>
           </div>
           <LabMedia media={lab.media} title={lab.title} />
+          {lab.demoUrl ? <ButtonLink href={lab.demoUrl}>Explorar demo sintética de solo lectura</ButtonLink> : null}
           <div className="case-contrast">
             <article><h3>Evidencia disponible</h3><p>{lab.case.evidence}</p></article>
             <article><h3>Límites</h3><p>{lab.case.limits}</p></article>
