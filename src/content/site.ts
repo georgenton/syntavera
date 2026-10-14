@@ -20,6 +20,7 @@ const labSchema = z.object({
   maturityLabel: z.string().min(1),
   promise: z.string().min(1),
   disclosure: z.string().min(1),
+  demoUrl: z.literal("https://demo.drillops.syntavera.dev").optional(),
   stack: z.array(z.string().min(1)).min(1),
   case: z.object({
     problem: z.string().min(1),
